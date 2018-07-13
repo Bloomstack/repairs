@@ -85,7 +85,7 @@ doctype_js = {"Warranty Claim": "public/js/warranty_claim.js"}
 # 		"on_update": "method",
 # 		"on_cancel": "method",
 # 		"on_trash": "method"
-#	}
+# 	}
 # }
 
 doc_events = {

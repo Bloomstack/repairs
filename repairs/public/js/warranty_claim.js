@@ -25,7 +25,7 @@ frappe.ui.form.on("Warranty Claim", {
 
 			cur_frm.add_custom_button(__('Payment'), () => {
 				frappe.model.open_mapped_doc({
-					method: "repairs.utils.make_invoice",
+					method: "repairs.utils.make_payment_entry",
 					frm: cur_frm
 				});
 			}, __("Make"));
