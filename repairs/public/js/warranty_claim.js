@@ -1,34 +1,48 @@
 frappe.ui.form.on("Warranty Claim", {
-	refresh: () => {
-		if (!cur_frm.doc.__islocal) {
-			// TODO: functionify
-			cur_frm.add_custom_button(__('Quotation'), () => {
+	refresh: (frm) => {
+		if (!frm.doc.__islocal) {
+			frm.add_custom_button(__('Quotation'), () => {
 				frappe.model.open_mapped_doc({
 					method: "repairs.utils.make_quotation",
-					frm: cur_frm
+					frm: frm
 				});
 			}, __("Make"));
 
-			cur_frm.add_custom_button(__('Stock Receipt'), () => {
+			frm.add_custom_button(__('Stock Receipt'), () => {
 				frappe.model.open_mapped_doc({
 					method: "repairs.utils.make_stock_entry",
-					frm: cur_frm
+					frm: frm
 				});
 			}, __("Make"));
 
-			cur_frm.add_custom_button(__('Invoice'), () => {
+			frm.add_custom_button(__('Repair'), () => {
+				frappe.model.open_mapped_doc({
+					method: "repairs.utils.make_production_order",
+					frm: frm,
+					run_link_triggers: true
+				});
+			}, __("Make"));
+
+			frm.add_custom_button(__('Invoice'), () => {
 				frappe.model.open_mapped_doc({
 					method: "repairs.utils.make_invoice",
-					frm: cur_frm
+					frm: frm
 				});
 			}, __("Make"));
 
-			cur_frm.add_custom_button(__('Payment'), () => {
+			frm.add_custom_button(__('Delivery'), () => {
 				frappe.model.open_mapped_doc({
-					method: "repairs.utils.make_payment_entry",
-					frm: cur_frm
+					method: "repairs.utils.make_delivery_note",
+					frm: frm
 				});
 			}, __("Make"));
+
+			// frm.add_custom_button(__('Payment'), () => {
+			// 	frappe.model.open_mapped_doc({
+			// 		method: "repairs.utils.make_payment_entry",
+			// 		frm: frm
+			// 	});
+			// }, __("Make"));
 		};
 	},
 });
