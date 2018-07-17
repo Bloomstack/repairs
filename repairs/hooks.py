@@ -79,17 +79,9 @@ doctype_list_js = {"doctype": "public/js/warranty_claim_list.js"}
 # ---------------
 # Hook on document methods and events
 
-# doc_events = {
-# 	"*": {
-# 		"on_update": "method",
-# 		"on_cancel": "method",
-# 		"on_trash": "method"
-# 	}
-# }
-
 doc_events = {
 	"Warranty Claim": {
-		"validate": "repairs.utils.match_existing_serial_no"
+		"validate": "repairs.utils.set_missing_values",
 	},
 	"Serial No": {
 		"before_submit": "repairs.utils.validate_serial_no_warranty"
