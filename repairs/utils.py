@@ -11,6 +11,12 @@ def match_existing_serial_no(doc, method):
 		doc.serial_no = doc.unlinked_serial_no
 
 
+def validate_serial_no_warranty(doc, method):
+	# Remove warranty period for old manufactured items that are not in the system
+	if frappe.db.get_value("Stock Entry", doc.purchase_document_no, "purpose") != "Manufacture":
+		doc.warranty_period = None
+
+
 @frappe.whitelist()
 def make_quotation(source_name, target_doc=None):
 	def set_missing_values(source, target):
@@ -29,7 +35,7 @@ def make_stock_entry(source_name, target_doc=None):
 		target_doc.update({
 			"qty": 1,
 			"uom": frappe.db.get_value("Item", source_doc.item_code, "stock_uom"),
-			"serial_no": source_doc.serial_no
+			"serial_no": source_doc.serial_no or source_doc.unlinked_serial_no
 		})
 
 	target_doc = make_mapped_doc("Stock Entry", source_name, target_doc, postprocess=set_missing_values)
@@ -69,7 +75,7 @@ def make_delivery_note(source_name, target_doc=None):
 		target_doc.update({
 			"qty": 1,
 			"uom": frappe.db.get_value("Item", source_doc.item_code, "stock_uom"),
-			"serial_no": source_doc.serial_no,
+			"serial_no": source_doc.serial_no or source_doc.unlinked_serial_no,
 			"warehouse": frappe.db.get_single_value("Repair Settings", "default_incoming_warehouse")
 		})
 
@@ -84,11 +90,6 @@ def make_delivery_note(source_name, target_doc=None):
 		map_child_doc(source_doc, target_doc, table_map, source_doc)
 
 	return target_doc
-
-
-# @frappe.whitelist()
-# def make_payment_entry(source_name, target_doc=None):
-# 	return make_mapped_doc("Payment Entry", source_name, target_doc)
 
 
 def make_mapped_doc(target_dt, source_name, target_doc, field_map=None, postprocess=None):

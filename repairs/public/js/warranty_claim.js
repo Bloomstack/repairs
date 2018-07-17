@@ -36,13 +36,6 @@ frappe.ui.form.on("Warranty Claim", {
 					frm: frm
 				});
 			}, __("Make"));
-
-			// frm.add_custom_button(__('Payment'), () => {
-			// 	frappe.model.open_mapped_doc({
-			// 		method: "repairs.utils.make_payment_entry",
-			// 		frm: frm
-			// 	});
-			// }, __("Make"));
 		};
 	},
 });

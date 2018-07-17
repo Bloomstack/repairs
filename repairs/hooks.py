@@ -90,6 +90,9 @@ doctype_list_js = {"doctype": "public/js/warranty_claim_list.js"}
 doc_events = {
 	"Warranty Claim": {
 		"validate": "repairs.utils.match_existing_serial_no"
+	},
+	"Serial No": {
+		"before_submit": "repairs.utils.validate_serial_no_warranty"
 	}
 }
 
