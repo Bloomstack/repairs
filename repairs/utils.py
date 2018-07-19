@@ -65,9 +65,11 @@ def create_stock_entry(doc):
 	stock_entry.submit()
 
 	if not doc.serial_no:
-		doc.serial_no = serial_no
-		doc.item_received = True
-		doc.save()
+		doc.db_set("serial_no", serial_no)
+
+	doc.db_set("item_received", True)
+	warranty_not_applicable = True if frappe.db.get_value("Serial No", serial_no, "maintenance_status") != "Under Warranty" else False
+	doc.db_set("is_paid", warranty_not_applicable)
 
 	return stock_entry.name
 

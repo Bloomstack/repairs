@@ -29,7 +29,6 @@ def make_production_order(source_name, target_doc=None):
 def make_stock_entry_from_warranty_claim(doc):
 	doc = frappe.get_doc("Warranty Claim", doc)
 	stock_entry_name = create_stock_entry(doc)
-	doc.item_received = True
 
 	return stock_entry_name
 

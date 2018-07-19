@@ -1,7 +1,24 @@
 frappe.ui.form.on("Warranty Claim", {
 	refresh: (frm) => {
 		if (!frm.doc.__islocal) {
-			if (frm.doc.status == "Open") {  // "To Test"
+			if (!frm.doc.item_received) {
+				frm.add_custom_button(__("Stock Receipt"), () => {
+					frappe.call({
+						method: "repairs.api.make_stock_entry_from_warranty_claim",
+						args: {
+							doc: frm.doc.name
+						},
+						callback: (r) => {
+							if (r.message) {
+								// frappe.msgprint(__("Stock Entry ({0}) created.", [r.message]));
+								frm.save();
+							}
+						}
+					});
+				}, __("Make"));
+			};
+
+			if (frm.doc.status == "To Test") {
 				frm.add_custom_button(__("Test Item"), () => {
 					var d = new frappe.ui.Dialog({
 						title: __('Testing Results'),
@@ -12,9 +29,10 @@ frappe.ui.form.on("Warranty Claim", {
 								"reqd": 1
 							}
 						],
-						primary_action: function () {
+						primary_action: () => {
 							var data = d.get_values();
 
+							frm.set_value("status", frm.doc.is_paid ? "To Bill" : "To Repair");
 							frm.set_value("tested_by", frappe.session.user);
 							frm.set_value("testing_date", frappe.datetime.now_datetime());
 							frm.set_value("testing_details", data.testing_details);
@@ -26,7 +44,16 @@ frappe.ui.form.on("Warranty Claim", {
 					});
 					d.show();
 				});
-			}
+			};
+
+			if (frm.doc.status == "To Bill") {
+				frm.add_custom_button(__("Quotation"), () => {
+					frappe.model.open_mapped_doc({
+						method: "repairs.api.make_quotation",
+						frm: frm
+					});
+				}, __("Make"));
+			};
 
 			if (frm.doc.status == "To Repair") {
 				frm.add_custom_button(__("Repair Item"), () => {
@@ -38,40 +65,15 @@ frappe.ui.form.on("Warranty Claim", {
 				});
 			};
 
-			if (!frm.doc.serial_no || !frm.doc.item_received) {
-				frm.add_custom_button(__("Stock Receipt"), () => {
-					frappe.call({
-						method: "repairs.api.make_stock_entry_from_warranty_claim",
-						args: {
-							doc: frm.doc.name
-						},
-						callback: (r) => {
-							if (r.message) {
-								// frappe.msgprint(__("Stock Entry ({0}) created.", [r.message]));
-								frm.refresh();
-							}
-						}
-					});
-				}, __("Make"));
-			};
-
-			var methodMappings = {
-				"Quotation": "make_quotation",
-				"Delivery": "make_delivery_note"
-			};
-
-			Object.entries(methodMappings).forEach((mapping) => {
-				var label = mapping[0];
-				var method = mapping[1];
-
-				frm.add_custom_button(__(`${label}`), () => {
+			if (frm.doc.status == "To Deliver") {
+				frm.add_custom_button(__("Delivery"), () => {
 					frappe.model.open_mapped_doc({
-						method: `repairs.api.${method}`,
+						method: "repairs.api.make_delivery_note",
 						frm: frm,
 						run_link_triggers: true
 					});
 				}, __("Make"));
-			});
+			};
 		}
 	},
 });
