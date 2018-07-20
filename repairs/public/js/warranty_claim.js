@@ -72,7 +72,8 @@ frappe.ui.form.on("Warranty Claim", {
 				frm.add_custom_button(__("Quotation"), () => {
 					frappe.model.open_mapped_doc({
 						method: "repairs.api.make_quotation",
-						frm: frm
+						frm: frm,
+						run_link_triggers: true
 					});
 				}, __("Make"));
 			};

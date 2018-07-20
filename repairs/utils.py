@@ -73,19 +73,29 @@ def create_stock_entry(doc):
 	return stock_entry.name
 
 
-def make_mapped_doc(target_dt, source_name, target_doc, filters=None, field_map=None, postprocess=None):
+def make_mapped_doc(target_dt, source_dn, target_doc, target_cdt=None,
+					filters=None, field_map=None, postprocess=None):
 	if not field_map:
 		field_map = {}
 
 	if not filters:
-		filters = {"warranty_claim": source_name, "docstatus": 1}
+		filters = {"warranty_claim": source_dn, "docstatus": 1}
+
+	table_map = {
+		"Warranty Claim": {
+			"doctype": target_dt,
+			"field_map": field_map
+		}
+	}
+
+	if target_cdt:
+		table_map.update({
+			"Repair Claim Services": {
+				"doctype": target_cdt
+			}
+		})
 
 	existing_doc = frappe.get_all(target_dt, filters=filters)
 
 	if not existing_doc:
-		return get_mapped_doc("Warranty Claim", source_name, {
-			"Warranty Claim": {
-				"doctype": target_dt,
-				"field_map": field_map
-			},
-		}, target_doc, postprocess)
+		return get_mapped_doc("Warranty Claim", source_dn, table_map, target_doc, postprocess=postprocess)
