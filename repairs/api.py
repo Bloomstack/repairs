@@ -13,16 +13,38 @@ def make_quotation(source_name, target_doc=None):
 
 
 @frappe.whitelist()
-def make_production_order(source_name, target_doc=None):
+def start_repair(source_name, target_doc=None):
 	def set_missing_values(source, target):
 		target.qty = 1
-		# target.serial_number = source.serial_no or source.unlinked_serial_no
 
 	field_map = {
 		"item_code": "production_item"
 	}
 
-	return make_mapped_doc("Production Order", source_name, target_doc, field_map=field_map, postprocess=set_missing_values)
+	target_doc = make_mapped_doc("Production Order", source_name, target_doc, field_map=field_map, postprocess=set_missing_values)
+	target_doc.update({
+		"use_multi_level_bom": 0,
+		"skip_transfer": 1
+	})
+
+	target_doc.insert()
+	target_doc.submit()
+
+	return target_doc
+
+
+@frappe.whitelist()
+def finish_repair(source_name, target_doc=None):
+	def set_missing_values(source, target):
+		target.purpose = "Material Issue"
+
+	return make_mapped_doc("Stock Entry", source_name, target_doc, postprocess=set_missing_values, check_for_existing=False)
+
+
+@frappe.whitelist()
+def complete_production_order(doc):
+	frappe.db.set_value("Production Order", {"warranty_claim": doc}, "status", "Completed")
+	frappe.db.commit()
 
 
 @frappe.whitelist()

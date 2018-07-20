@@ -74,7 +74,7 @@ def create_stock_entry(doc):
 
 
 def make_mapped_doc(target_dt, source_dn, target_doc, target_cdt=None,
-					filters=None, field_map=None, postprocess=None):
+					filters=None, field_map=None, postprocess=None, check_for_existing=True):
 	if not field_map:
 		field_map = {}
 
@@ -95,7 +95,9 @@ def make_mapped_doc(target_dt, source_dn, target_doc, target_cdt=None,
 			}
 		})
 
-	existing_doc = frappe.get_all(target_dt, filters=filters)
+	# Multiple stock entries can be made against Warranty Claim
+	if check_for_existing:
+		if frappe.get_all(target_dt, filters=filters):
+			return
 
-	if not existing_doc:
-		return get_mapped_doc("Warranty Claim", source_dn, table_map, target_doc, postprocess=postprocess)
+	return get_mapped_doc("Warranty Claim", source_dn, table_map, target_doc, postprocess=postprocess)

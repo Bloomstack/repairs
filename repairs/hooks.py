@@ -95,6 +95,9 @@ doc_events = {
 	},
 	"Payment Entry": {
 		"on_submit": "repairs.status_updater.payment_entry"
+	},
+	"Production Order": {
+		"on_submit": "repairs.status_updater.production_order"
 	}
 }
 

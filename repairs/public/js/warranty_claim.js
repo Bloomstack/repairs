@@ -79,13 +79,66 @@ frappe.ui.form.on("Warranty Claim", {
 			};
 
 			if (in_list(["To Repair", "To Bill", "Unpaid"], frm.doc.status)) {
-				frm.add_custom_button(__("Repair Item"), () => {
+				var repair_btn = frm.add_custom_button(__("Start Repair"), () => {
 					frappe.model.open_mapped_doc({
-						method: "repairs.api.make_production_order",
+						method: "repairs.api.start_repair",
 						frm: frm
 					});
 				});
+				repair_btn.addClass('btn-primary');
 			};
+
+			if (frm.doc.status == "Repairing") {
+				var repair_btn = frm.add_custom_button(__("Finish Repair"), () => {
+					var d = new frappe.ui.Dialog({
+						title: __("Repair Results"),
+						fields: [
+							{
+								label: __("With Items"),
+								fieldname: "with_items",
+								fieldtype: "Check",
+								reqd: 0
+							},
+							{
+								label: __("Enter Results"),
+								fieldname: "resolution_details",
+								fieldtype: "Text",
+								reqd: 1
+							}
+						],
+						primary_action: () => {
+							var data = d.get_values();
+
+							if (data.with_items) {
+								frappe.model.open_mapped_doc({
+									method: "repairs.api.finish_repair",
+									frm: frm
+								});
+							}
+
+							frappe.call({
+								method: "repairs.api.complete_production_order",
+								args: { doc: frm.doc.name },
+								callback: (r) => {
+									if (!r.exc) {
+										frm.set_value("status", "To Deliver");
+										frm.set_value("resolved_by", frappe.session.user);
+										frm.set_value("resolution_date", frappe.datetime.now_datetime());
+										frm.set_value("resolution_details", data.resolution_details);
+										frm.save();
+
+										d.hide();
+									}
+								}
+							})
+						},
+						primary_action_label: __("Finish")
+					});
+					d.show();
+				});
+				repair_btn.addClass('btn-primary');
+			};
+
 
 			if (!in_list(["To Receive", "Closed", "Completed"], frm.doc.status)) {
 				frm.add_custom_button(__("Delivery"), () => {
