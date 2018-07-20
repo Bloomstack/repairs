@@ -16,7 +16,7 @@ def make_quotation(source_name, target_doc=None):
 def make_production_order(source_name, target_doc=None):
 	def set_missing_values(source, target):
 		target.qty = 1
-		target.serial_number = source.serial_no or source.unlinked_serial_no
+		# target.serial_number = source.serial_no or source.unlinked_serial_no
 
 	field_map = {
 		"item_code": "production_item"
@@ -41,6 +41,9 @@ def make_delivery_note(source_name, target_doc=None):
 			"uom": frappe.db.get_value("Item", source_doc.item_code, "stock_uom"),
 			"serial_no": source_doc.serial_no or source_doc.unlinked_serial_no,
 			"warehouse": frappe.db.get_single_value("Repair Settings", "default_incoming_warehouse"),
+			"item_ignore_pricing_rule": 1,
+			"allow_zero_valuation_rate": 1,
+			"rate": 0,
 			"discount_percentage": 100
 		})
 

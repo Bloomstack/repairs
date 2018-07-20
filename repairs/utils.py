@@ -31,7 +31,8 @@ def set_missing_values(doc, method):
 			"description": serial_no.description,
 			"warranty_amc_status": serial_no.maintenance_status,
 			"warranty_expiry_date": serial_no.warranty_expiry_date,
-			"amc_expiry_date": serial_no.amc_expiry_date
+			"amc_expiry_date": serial_no.amc_expiry_date,
+			"is_under_warranty": serial_no.maintenance_status in ["Under Warranty", "Under AMC"]
 		})
 
 
@@ -68,8 +69,6 @@ def create_stock_entry(doc):
 		doc.db_set("serial_no", serial_no)
 
 	doc.db_set("item_received", True)
-	warranty_not_applicable = True if frappe.db.get_value("Serial No", serial_no, "maintenance_status") != "Under Warranty" else False
-	doc.db_set("is_paid", warranty_not_applicable)
 
 	return stock_entry.name
 
