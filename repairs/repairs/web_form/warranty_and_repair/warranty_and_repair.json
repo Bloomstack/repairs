@@ -18,7 +18,7 @@
  "is_standard": 1, 
  "login_required": 1, 
  "max_attachment_size": 0, 
- "modified": "2018-08-03 10:56:57.749661", 
+ "modified": "2018-08-03 11:08:02.244468", 
  "modified_by": "Administrator", 
  "module": "Repairs", 
  "name": "warranty-and-repair", 
@@ -51,17 +51,6 @@
    "max_value": 0, 
    "read_only": 0, 
    "reqd": 1
-  }, 
-  {
-   "fieldname": "item_name", 
-   "fieldtype": "Data", 
-   "hidden": 0, 
-   "label": "Item Name", 
-   "max_length": 0, 
-   "max_value": 0, 
-   "options": "", 
-   "read_only": 0, 
-   "reqd": 0
   }, 
   {
    "description": "What seems to be the problem with your IEM?", 
