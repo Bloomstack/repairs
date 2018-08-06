@@ -20,7 +20,7 @@
                     </span>
                 {% endif %}
                 <div class="small text-muted transaction-time" title="{{ frappe.utils.format_datetime(doc.modified, " medium ") }}">
-                    {{ frappe.utils.global_date_format(doc.complaint_date) }}
+                    {{ doc.status }}
                 </div>
             </div>
             <div class="col-sm-3">
