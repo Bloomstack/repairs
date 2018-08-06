@@ -1,6 +1,6 @@
 {
  "accept_payment": 0, 
- "allow_comments": 0, 
+ "allow_comments": 1, 
  "allow_delete": 0, 
  "allow_edit": 1, 
  "allow_incomplete": 0, 
@@ -18,7 +18,7 @@
  "is_standard": 1, 
  "login_required": 1, 
  "max_attachment_size": 0, 
- "modified": "2018-08-03 11:08:02.244468", 
+ "modified": "2018-08-06 04:23:03.824229", 
  "modified_by": "Administrator", 
  "module": "Repairs", 
  "name": "warranty-and-repair", 
@@ -55,7 +55,7 @@
   {
    "description": "What seems to be the problem with your IEM?", 
    "fieldname": "complaint", 
-   "fieldtype": "Text", 
+   "fieldtype": "Small Text", 
    "hidden": 0, 
    "label": "Issue", 
    "max_length": 0, 
@@ -66,7 +66,7 @@
   {
    "description": "Where can we send your repair once ready?", 
    "fieldname": "address_display", 
-   "fieldtype": "Text", 
+   "fieldtype": "Small Text", 
    "hidden": 0, 
    "label": "Address", 
    "max_length": 0, 

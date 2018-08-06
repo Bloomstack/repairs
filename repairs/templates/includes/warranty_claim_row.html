@@ -1,0 +1,43 @@
+<div class="web-list-item transaction-list-item">
+    <a href="/warranty-and-repair?name={{ doc.name }}">
+        <div class="row">
+            <div class="col-sm-3">
+                {% if(doc.status in ("Unpaid", "Closed")) %}
+                    <span class="indicator small red">
+                        {{ doc.name }}
+                    </span>
+                {% elif(doc.status in ("To Receive", "To Test", "To Bill", "To Repair", "To Deliver", "Repairing")) %}
+                    <span class="indicator small orange">
+                        {{ doc.name }}
+                    </span>
+                {% elif(doc.status in ("Completed", "Repairing")) %}
+                    <span class="indicator small green">
+                        {{ doc.name }}
+                    </span>
+                 {% else %}
+                    <span class="indicator small darkgrey">
+                        {{ doc.name }}
+                    </span>
+                {% endif %}
+                <div class="small text-muted transaction-time" title="{{ frappe.utils.format_datetime(doc.modified, " medium ") }}">
+                    {{ frappe.utils.global_date_format(doc.complaint_date) }}
+                </div>
+            </div>
+            <div class="col-sm-3">
+                <div class="text-muted">
+                    {{ doc.serial_no or doc.unlinked_serial_no or "" }}
+                </div>
+            </div>
+            <div class="col-sm-3">
+                <div class="text-muted">
+                    {{ doc.item_name or "" }}
+                </div>
+            </div>
+            <div class="col-sm-3">
+                <div class="text-right text-muted">
+                    {{ doc.service_address or doc.address_display or "" }}
+                </div>
+            </div>
+        </div>
+    </a>
+</div>
