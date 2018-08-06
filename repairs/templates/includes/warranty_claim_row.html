@@ -2,11 +2,11 @@
     <a href="/warranty-and-repair?name={{ doc.name }}">
         <div class="row">
             <div class="col-sm-3">
-                {% if(doc.status in ("Unpaid", "Closed")) %}
+                {% if(doc.status == "Closed") %}
                     <span class="indicator small red">
                         {{ doc.name }}
                     </span>
-                {% elif(doc.status in ("To Receive", "To Test", "To Bill", "To Repair", "To Deliver", "Repairing")) %}
+                {% elif(doc.status in ("To Receive", "To Test", "To Repair", "To Deliver", "Repairing")) %}
                     <span class="indicator small orange">
                         {{ doc.name }}
                     </span>

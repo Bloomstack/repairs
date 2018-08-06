@@ -9,7 +9,14 @@ def make_quotation(source_name, target_doc=None):
 	def set_missing_values(source, target):
 		target.order_type = "Maintenance"
 
-	return make_mapped_doc("Quotation", source_name, target_doc, target_cdt="Quotation Item", postprocess=set_missing_values)
+	target_doc = make_mapped_doc("Quotation", source_name, target_doc, target_cdt="Quotation Item", postprocess=set_missing_values)
+
+	for item in target_doc.items:
+		item.qty = 1
+
+	target_doc.save()
+
+	return target_doc
 
 
 @frappe.whitelist()
@@ -26,9 +33,6 @@ def start_repair(source_name, target_doc=None):
 		"use_multi_level_bom": 0,
 		"skip_transfer": 1
 	})
-
-	target_doc.insert()
-	target_doc.submit()
 
 	return target_doc
 

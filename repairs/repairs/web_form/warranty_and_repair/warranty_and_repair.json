@@ -14,11 +14,11 @@
  "docstatus": 0, 
  "doctype": "Web Form", 
  "idx": 0, 
- "introduction_text": "<div class=\"row\">\n    <div class=\"col-sm-12\">\n        <p>\n            In case your JH IEM needs warranty service or repairs, please submit a Warranty and Repair request and send it to us with the following considerations:\n        </p>\n        <ul>\n            <li>Pack your IEMs in their case and ship inside a <strong>protective package</strong>.</li>\n            <li>Include a copy of your Warranty and Repair form (read the <a href=\"/warranty_and_repair#repair-policy\" rel=\"noopener\" target=\"_blank\">refit and warranty policy</a> before submitting the request)</li>\n            <li>Ship the package, prepaid and insured, to: (please note, we do not recommend USPS for shipments to us)\n                <p style=\"padding-left: 20px;\"><em>\n                    JH Audio\n                    <br>ATTN: Repairs\n                    <br>111 West Jefferson St., Ste. 300\n                    <br>Orlando, FL 32801\n                    <br>United States\n                </em></p>\n            </li>\n        </ul>\n        <p>\n            Our Repair Department will contact you within 3 business days of receipt of your IEMs with a repair quote (whether in or out of warranty) to get approval. We strive to ensure that your IEMs are repaired and returned within 5-7 business days after receipt of payment (if applicable). If you require RUSH repair service, please contact <a href=\"mailto:repairs@jhaudio.com?Subject=Rush%20Repair\">repairs@jhaudio.com</a> directly to schedule. Additional fees may apply.\n        </p>\n    </div>\n</div>", 
+ "introduction_text": "<div class=\"row\">    <div class=\"col-sm-12\">        <p>            In case your JH IEM needs warranty service or repairs, please submit a Warranty and Repair request and send it to us with the following considerations:        </p>        <ul>            <li>Pack your IEMs in their case and ship inside a <strong>protective package</strong>.</li>            <li>Include a copy of your Warranty and Repair form (read the <a href=\"/warranty_and_repair#repair-policy\" rel=\"noopener\" target=\"_blank\">refit and warranty policy</a> before submitting the request)</li>            <li>Ship the package, prepaid and insured, to: (please note, we do not recommend USPS for shipments to us)                <p style=\"padding-left: 20px;\"><em>                    JH Audio                    <br>ATTN: Repairs                    <br>111 West Jefferson St., Ste. 300                    <br>Orlando, FL 32801                    <br>United States                </em></p>            </li>        </ul>        <p>            Our Repair Department will contact you within 3 business days of receipt of your IEMs with a repair quote (whether in or out of warranty) to get approval. We strive to ensure that your IEMs are repaired and returned within 5-7 business days after receipt of payment (if applicable). If you require RUSH repair service, please contact <a href=\"mailto:repairs@jhaudio.com?Subject=Rush%20Repair\">repairs@jhaudio.com</a> directly to schedule. Additional fees may apply.        </p>    </div></div>", 
  "is_standard": 1, 
  "login_required": 1, 
  "max_attachment_size": 0, 
- "modified": "2018-08-06 04:23:03.824229", 
+ "modified": "2018-08-06 05:56:35.098681", 
  "modified_by": "Administrator", 
  "module": "Repairs", 
  "name": "warranty-and-repair", 
@@ -32,6 +32,7 @@
  "title": "Warranty and Repair", 
  "web_form_fields": [
   {
+   "description": "Please also include the country code in the mobile number", 
    "fieldname": "contact_mobile", 
    "fieldtype": "Data", 
    "hidden": 0, 

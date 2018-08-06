@@ -30,9 +30,8 @@ frappe.ui.form.on("Warranty Claim", {
 							doc: frm.doc.name
 						},
 						callback: (r) => {
-							if (r.message) {
-								// frappe.msgprint(__("Stock Entry ({0}) created.", [r.message]));
-								frm.save();
+							if (!r.exc) {
+								frm.reload_doc();
 							}
 						}
 					});
@@ -40,7 +39,7 @@ frappe.ui.form.on("Warranty Claim", {
 			};
 
 			if (frm.doc.status == "To Test") {
-				frm.add_custom_button(__("Test Item"), () => {
+				var repair_btn = frm.add_custom_button(__("Test Item"), () => {
 					var d = new frappe.ui.Dialog({
 						title: __("Testing Results"),
 						fields: [
@@ -54,7 +53,8 @@ frappe.ui.form.on("Warranty Claim", {
 						primary_action: () => {
 							var data = d.get_values();
 
-							frm.set_value("status", frm.doc.is_under_warranty ? "To Repair" : "To Bill");
+							frm.set_value("status", "To Repair");
+							frm.set_value("billing_status", frm.doc.is_under_warranty ? "Under Warranty" : "To Bill");
 							frm.set_value("tested_by", frappe.session.user);
 							frm.set_value("testing_date", frappe.datetime.now_datetime());
 							frm.set_value("testing_details", data.testing_details);
@@ -66,9 +66,10 @@ frappe.ui.form.on("Warranty Claim", {
 					});
 					d.show();
 				});
+				repair_btn.addClass('btn-primary');
 			};
 
-			if (frm.doc.status == "To Bill") {
+			if (frm.doc.billing_status == "To Bill") {
 				frm.add_custom_button(__("Quotation"), () => {
 					frappe.model.open_mapped_doc({
 						method: "repairs.api.make_quotation",
@@ -78,11 +79,12 @@ frappe.ui.form.on("Warranty Claim", {
 				}, __("Make"));
 			};
 
-			if (in_list(["To Repair", "To Bill", "Unpaid"], frm.doc.status)) {
+			if (frm.doc.status == "To Repair") {
 				var repair_btn = frm.add_custom_button(__("Start Repair"), () => {
 					frappe.model.open_mapped_doc({
 						method: "repairs.api.start_repair",
-						frm: frm
+						frm: frm,
+						run_link_triggers: true
 					});
 				});
 				repair_btn.addClass('btn-primary');

@@ -43,13 +43,8 @@ def validate_serial_no_warranty(doc, method):
 
 
 def receive_stock_item(doc, method):
-	if not doc.item_received:
-		return
-
-	if not doc.item_code:
-		return
-
-	create_stock_entry(doc)
+	if doc.item_received and doc.item_code:
+		create_stock_entry(doc)
 
 
 def create_stock_entry(doc):
@@ -68,13 +63,16 @@ def create_stock_entry(doc):
 	if not doc.serial_no:
 		doc.db_set("serial_no", serial_no)
 
-	doc.db_set("item_received", True)
+	if not doc.item_received:
+		doc.db_set("item_received", True)
+
+	doc.reload()
 
 	return stock_entry.name
 
 
-def make_mapped_doc(target_dt, source_dn, target_doc, target_cdt=None,
-					filters=None, field_map=None, postprocess=None, check_for_existing=True):
+def make_mapped_doc(target_dt, source_dn, target_doc, target_cdt=None, filters=None,
+					field_map=None, postprocess=None, check_for_existing=True):
 	if not field_map:
 		field_map = {}
 

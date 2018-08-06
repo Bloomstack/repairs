@@ -88,16 +88,24 @@ doc_events = {
 		"before_submit": "repairs.utils.validate_serial_no_warranty"
 	},
 	"Stock Entry": {
-		"on_submit": "repairs.status_updater.stock_entry"
+		"on_submit": "repairs.status_updater.stock_entry",
+		"on_cancel": "repairs.status_updater.stock_entry"
 	},
 	"Sales Invoice": {
-		"on_submit": "repairs.status_updater.sales_invoice"
+		"on_submit": "repairs.status_updater.sales_invoice",
+		"on_cancel": "repairs.status_updater.sales_invoice"
 	},
 	"Payment Entry": {
-		"on_submit": "repairs.status_updater.payment_entry"
+		"on_submit": "repairs.status_updater.payment_entry",
+		"on_cancel": "repairs.status_updater.payment_entry"
 	},
 	"Production Order": {
-		"on_submit": "repairs.status_updater.production_order"
+		"on_submit": "repairs.status_updater.production_order",
+		"on_cancel": "repairs.status_updater.production_order"
+	},
+	"DTI Shipment Note": {
+		"on_submit": "repairs.status_updater.dti_shipment_note",
+		"on_cancel": "repairs.status_updater.dti_shipment_note"
 	}
 }
 
