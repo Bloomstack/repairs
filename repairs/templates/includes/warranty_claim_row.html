@@ -2,25 +2,21 @@
     <a href="/warranty-and-repair?name={{ doc.name }}">
         <div class="row">
             <div class="col-sm-3">
-                {% if(doc.status == "Closed") %}
-                    <span class="indicator small red">
-                        {{ doc.name }}
-                    </span>
-                {% elif(doc.status in ("To Receive", "To Test", "To Repair", "To Deliver", "Repairing")) %}
+                {% if(doc.status in ("To Receive", "To Test", "To Repair", "To Deliver", "Repairing")) %}
                     <span class="indicator small orange">
                         {{ doc.name }}
                     </span>
-                {% elif(doc.status in ("Completed", "Repairing")) %}
+                {% elif(doc.status == "Completed") %}
                     <span class="indicator small green">
                         {{ doc.name }}
                     </span>
                  {% else %}
-                    <span class="indicator small darkgrey">
+                    <span class="indicator small red">
                         {{ doc.name }}
                     </span>
                 {% endif %}
-                <div class="small text-muted transaction-time" title="{{ frappe.utils.format_datetime(doc.modified, " medium ") }}">
-                    {{ doc.status }}
+                <div class="small text-muted transaction-time">
+                    {{ doc.status.replace("To", "Pending").replace("Deliver", "Delivery") }}
                 </div>
             </div>
             <div class="col-sm-3">
