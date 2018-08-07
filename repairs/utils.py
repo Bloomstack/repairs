@@ -5,27 +5,29 @@ from frappe.contacts.doctype.contact.contact import get_default_contact
 from frappe.model.mapper import get_mapped_doc
 
 
-def set_missing_values(doc, method):
-	if not doc.customer:
+def set_missing_values(warranty_claim, method):
+	if not warranty_claim.customer:
 		customer = get_current_customer()
-		doc.customer = customer.name
+		warranty_claim.customer = customer.name
 	else:
-		customer = frappe.get_doc("Customer", doc.customer)
+		customer = frappe.get_doc("Customer", warranty_claim.customer)
 
-	doc.customer_name = customer.customer_name
-	doc.contact_email = customer.email_id
-	doc.contact_person = get_default_contact("Customer", customer.name)
+	warranty_claim.update({
+		"customer_name": customer.customer_name,
+		"contact_email": customer.email_id,
+		"contact_person": get_default_contact("Customer", customer.name)
+	})
 
-	if not doc.contact_mobile:
-		doc.contact_mobile = customer.mobile_no
+	if not warranty_claim.contact_mobile:
+		warranty_claim.contact_mobile = customer.mobile_no
 
-	if frappe.db.exists("Serial No", doc.unlinked_serial_no):
-		doc.serial_no = doc.unlinked_serial_no
+	if not warranty_claim.serial_no and frappe.db.exists("Serial No", warranty_claim.unlinked_serial_no):
+		warranty_claim.serial_no = warranty_claim.unlinked_serial_no
 
-	if doc.serial_no:
-		serial_no = frappe.get_doc("Serial No", doc.serial_no)
+	if warranty_claim.serial_no:
+		serial_no = frappe.get_doc("Serial No", warranty_claim.serial_no)
 
-		doc.update({
+		warranty_claim.update({
 			"item_code": serial_no.item_code,
 			"item_name": serial_no.item_name,
 			"description": serial_no.description,
@@ -36,37 +38,56 @@ def set_missing_values(doc, method):
 		})
 
 
-def validate_serial_no_warranty(doc, method):
+def validate_serial_no_warranty(serial_no, method):
 	# Remove warranty period for old manufactured items that are not in the system
-	if frappe.db.get_value("Stock Entry", doc.purchase_document_no, "purpose") != "Manufacture":
-		doc.warranty_period = None
+	if serial_no.purchase_document_no:
+		if frappe.db.get_value("Stock Entry", serial_no.purchase_document_no, "purpose") != "Manufacture":
+			serial_no.warranty_period = None
 
 
-def receive_stock_item(doc, method):
-	if doc.item_received and doc.item_code:
-		create_stock_entry(doc)
+def receive_stock_item(warranty_claim, method):
+	if warranty_claim.item_received and warranty_claim.item_code:
+		create_stock_entry(warranty_claim)
 
 
-def create_stock_entry(doc):
+def create_stock_entry(warranty_claim):
 	to_warehouse = frappe.db.get_single_value("Repair Settings", "default_incoming_warehouse")
-	serial_no = doc.serial_no or doc.unlinked_serial_no
+	serial_no = warranty_claim.serial_no or warranty_claim.unlinked_serial_no
 
-	stock_entry = make_stock_entry(item_code=doc.item_code, qty=1,
+	stock_entry = make_stock_entry(item_code=warranty_claim.item_code, qty=1,
 									to_warehouse=to_warehouse, serial_no=serial_no,
 									do_not_save=True)
 
-	stock_entry.warranty_claim = doc.name
-	stock_entry.items[0].allow_zero_valuation_rate = True
+	stock_entry.warranty_claim = warranty_claim.name
+
+	# Include the cable and case in the stock receipt, if entered
+	if warranty_claim.cable:
+		stock_entry.append("items", {
+			"item_code": warranty_claim.cable,
+			"t_warehouse": to_warehouse,
+			"qty": 1
+		})
+
+	if warranty_claim.case:
+		stock_entry.append("items", {
+			"item_code": warranty_claim.case,
+			"t_warehouse": to_warehouse,
+			"qty": 1
+		})
+
+	for item in stock_entry.items:
+		item.allow_zero_valuation_rate = True
+
 	stock_entry.insert()
 	stock_entry.submit()
 
-	if not doc.serial_no:
-		doc.db_set("serial_no", serial_no)
+	if not warranty_claim.serial_no:
+		warranty_claim.db_set("serial_no", serial_no)
 
-	if not doc.item_received:
-		doc.db_set("item_received", True)
+	if not warranty_claim.item_received:
+		warranty_claim.db_set("item_received", True)
 
-	doc.reload()
+	warranty_claim.reload()
 
 	return stock_entry.name
 

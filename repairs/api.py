@@ -5,6 +5,14 @@ from .utils import create_stock_entry, make_mapped_doc
 
 
 @frappe.whitelist()
+def make_stock_entry_from_warranty_claim(doc):
+	doc = frappe.get_doc("Warranty Claim", doc)
+	stock_entry_name = create_stock_entry(doc)
+
+	return stock_entry_name
+
+
+@frappe.whitelist()
 def make_quotation(source_name, target_doc=None):
 	def set_missing_values(source, target):
 		target.order_type = "Maintenance"
@@ -52,14 +60,6 @@ def complete_production_order(doc):
 
 
 @frappe.whitelist()
-def make_stock_entry_from_warranty_claim(doc):
-	doc = frappe.get_doc("Warranty Claim", doc)
-	stock_entry_name = create_stock_entry(doc)
-
-	return stock_entry_name
-
-
-@frappe.whitelist()
 def make_delivery_note(source_name, target_doc=None):
 	def _set_child_fields(source_doc, target_doc, source_parent):
 		target_doc.update({
@@ -70,12 +70,25 @@ def make_delivery_note(source_name, target_doc=None):
 			"item_ignore_pricing_rule": 1,
 			"allow_zero_valuation_rate": 1,
 			"rate": 0,
-			"discount_percentage": 100
+			"additional_discount_percentage": 100
 		})
 
 	target_doc = make_mapped_doc("Delivery Note", source_name, target_doc)
-
 	source_doc = frappe.get_doc("Warranty Claim", source_name)
+
+	# Include the cable and case in the stock receipt, if entered
+	if source_doc.cable:
+		target_doc.append("items", {
+			"item_code": source_doc.cable,
+			"qty": 1
+		})
+
+	if source_doc.case:
+		target_doc.append("items", {
+			"item_code": source_doc.case,
+			"qty": 1
+		})
+
 	if source_doc.get("item_code"):
 		table_map = {
 			"doctype": "Delivery Note Item",

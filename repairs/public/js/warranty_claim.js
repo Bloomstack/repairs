@@ -1,6 +1,6 @@
 frappe.ui.form.on("Warranty Claim", {
 	refresh: (frm) => {
-		cur_frm.fields_dict.item_code.get_query = (doc, cdt, cdn) => {
+		frm.fields_dict.item_code.get_query = (doc, cdt, cdn) => {
 			return {
 				filters: {
 					"item_group": ["in", ["Custom", "Full Retail", "Universal"]],
@@ -9,19 +9,39 @@ frappe.ui.form.on("Warranty Claim", {
 			};
 		};
 
-		cur_frm.fields_dict.services.grid.get_field("item_code").get_query = (doc, cdt, cdn) => {
-			return { filters: { "item_group": "Services" } };
+		frm.fields_dict.cable.get_query = (doc, cdt, cdn) => {
+			return {
+				filters: {
+					"item_group": "Cables",
+					"is_sales_item": 1
+				}
+			};
 		};
 
-		cur_frm.fields_dict.cable.get_query = (doc, cdt, cdn) => {
-			return { filters: { "item_group": "Cables" } };
-		};
-
-		cur_frm.fields_dict.case.get_query = (doc, cdt, cdn) => {
+		frm.fields_dict.case.get_query = (doc, cdt, cdn) => {
 			return { filters: { "item_group": "Cases" } };
 		};
 
+		frm.fields_dict.services.grid.get_field("item_code").get_query = (doc, cdt, cdn) => {
+			return { filters: { "item_group": "Services" } };
+		};
+
 		if (!frm.doc.__islocal) {
+			// Reopen and close the document
+			if (frm.doc.status != "Closed") {
+				frm.add_custom_button(__("Close"), () => {
+					frm.set_value("previous_status", frm.doc.status);
+					frm.set_value("status", "Closed");
+					frm.save();
+				});
+			} else {
+				frm.add_custom_button(__("Reopen"), () => {
+					frm.set_value("status", frm.doc.previous_status);
+					frm.save();
+				});
+			}
+
+			// Receive the item from the customer
 			if (!frm.doc.item_received) {
 				frm.add_custom_button(__("Stock Receipt"), () => {
 					frappe.call({
@@ -38,6 +58,7 @@ frappe.ui.form.on("Warranty Claim", {
 				}, __("Make"));
 			};
 
+			// Start testing the item
 			if (frm.doc.status == "To Test") {
 				var repair_btn = frm.add_custom_button(__("Test Item"), () => {
 					var d = new frappe.ui.Dialog({
@@ -69,6 +90,7 @@ frappe.ui.form.on("Warranty Claim", {
 				repair_btn.addClass('btn-primary');
 			};
 
+			// Start the sales cycle for the customer
 			if (frm.doc.billing_status == "To Bill") {
 				frm.add_custom_button(__("Quotation"), () => {
 					frappe.model.open_mapped_doc({
@@ -79,6 +101,7 @@ frappe.ui.form.on("Warranty Claim", {
 				}, __("Make"));
 			};
 
+			// Start repairing the item
 			if (frm.doc.status == "To Repair") {
 				var repair_btn = frm.add_custom_button(__("Start Repair"), () => {
 					frappe.model.open_mapped_doc({
@@ -90,6 +113,7 @@ frappe.ui.form.on("Warranty Claim", {
 				repair_btn.addClass('btn-primary');
 			};
 
+			// Finish repairing the item (with or without items)
 			if (frm.doc.status == "Repairing") {
 				var repair_btn = frm.add_custom_button(__("Finish Repair"), () => {
 					var d = new frappe.ui.Dialog({
@@ -141,7 +165,7 @@ frappe.ui.form.on("Warranty Claim", {
 				repair_btn.addClass('btn-primary');
 			};
 
-
+			// Finally, make the delivery back to the customer
 			if (!in_list(["To Receive", "Closed", "Completed"], frm.doc.status)) {
 				frm.add_custom_button(__("Delivery"), () => {
 					frappe.model.open_mapped_doc({
