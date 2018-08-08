@@ -30,6 +30,7 @@ def set_missing_values(warranty_claim, method):
 		warranty_claim.update({
 			"item_code": serial_no.item_code,
 			"item_name": serial_no.item_name,
+			"item_group": serial_no.item_group,
 			"description": serial_no.description,
 			"warranty_amc_status": serial_no.maintenance_status,
 			"warranty_expiry_date": serial_no.warranty_expiry_date,
@@ -43,6 +44,25 @@ def validate_serial_no_warranty(serial_no, method):
 	if serial_no.purchase_document_no:
 		if frappe.db.get_value("Stock Entry", serial_no.purchase_document_no, "purpose") != "Manufacture":
 			serial_no.warranty_period = None
+
+
+def set_iem_owner(warranty_claim, method):
+	serial_no = warranty_claim.serial_no or warranty_claim.unlinked_serial_no
+
+	if serial_no:
+		impression_id = frappe.db.get_value("Serial No", serial_no, "impression_id")
+
+		if not impression_id:
+			# Split the serial number to retrieve the IID (serial number format: JH{IEM model shorthand}-{IID}-{count})
+			impression_id = serial_no.split("-")[1]
+
+			if frappe.db.exists("Serial No", serial_no):
+				iem_owner = frappe.db.get_value("IEM Owner", {"impression_id": impression_id}, "name")
+
+				frappe.db.set_value("Serial No", serial_no, "impression_id", impression_id)
+				frappe.db.set_value("Serial No", serial_no, "iem_owner", iem_owner)
+
+		warranty_claim.iem_owner = frappe.db.get_value("IEM Owner", {"impression_id": impression_id}, "name")
 
 
 def receive_stock_item(warranty_claim, method):

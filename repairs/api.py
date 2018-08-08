@@ -5,6 +5,18 @@ from .utils import create_stock_entry, make_mapped_doc
 
 
 @frappe.whitelist()
+def get_iem_owners(doctype, txt, searchfield, start, page_len, filters):
+	iem_owners = frappe.get_all("IEM Owner Customer", filters={"customer": filters.get("customer")}, fields=["parent"])
+	iem_owners = [customer.parent for customer in iem_owners]
+
+	iem_owner_filters = {"name": ["in", iem_owners]}
+	if filters.get("impression_id"):
+		iem_owner_filters["impression_id"] = filters.get("impression_id")
+
+	return frappe.get_all("IEM Owner", filters=iem_owner_filters, fields=["name", "email_id", "impression_id"], as_list=True)
+
+
+@frappe.whitelist()
 def make_stock_entry_from_warranty_claim(doc):
 	doc = frappe.get_doc("Warranty Claim", doc)
 	stock_entry_name = create_stock_entry(doc)

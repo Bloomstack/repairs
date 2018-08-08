@@ -82,7 +82,8 @@ doctype_list_js = {"Warranty Claim": "public/js/warranty_claim_list.js"}
 doc_events = {
 	"Warranty Claim": {
 		"before_insert": "repairs.utils.set_missing_values",
-		"after_insert": "repairs.utils.receive_stock_item"
+		"after_insert": "repairs.utils.receive_stock_item",
+		"validate": "repairs.utils.set_iem_owner"
 	},
 	"Serial No": {
 		"before_submit": "repairs.utils.validate_serial_no_warranty"

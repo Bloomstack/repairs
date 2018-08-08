@@ -1,5 +1,7 @@
 frappe.ui.form.on("Warranty Claim", {
 	refresh: (frm) => {
+		frm.add_fetch('item_code', 'item_group', 'item_group');
+
 		frm.fields_dict.item_code.get_query = (doc, cdt, cdn) => {
 			return {
 				filters: {
@@ -24,6 +26,23 @@ frappe.ui.form.on("Warranty Claim", {
 
 		frm.fields_dict.services.grid.get_field("item_code").get_query = (doc, cdt, cdn) => {
 			return { filters: { "item_group": "Services" } };
+		};
+
+		frm.fields_dict.iem_owner.get_query = (doc, cdt, cdn) => {
+			var serial_no = frm.doc.serial_no || frm.doc.unlinked_serial_no
+			var impression_id = ""
+
+			if (serial_no) {
+				impression_id = serial_no.split("-")[1]
+			}
+
+			return {
+				query: "repairs.api.get_iem_owners",
+				filters: {
+					"customer": doc.customer,
+					"impression_id": impression_id
+				}
+			};
 		};
 
 		if (!frm.doc.__islocal) {
