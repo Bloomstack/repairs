@@ -83,7 +83,10 @@ doc_events = {
 	"Warranty Claim": {
 		"before_insert": "repairs.utils.set_missing_values",
 		"after_insert": "repairs.utils.receive_stock_item",
-		"validate": "repairs.utils.set_iem_owner",
+		"validate": [
+			"repairs.utils.set_iem_owner",
+			"repairs.utils.validate_service_qty"
+		],
 		"on_update": "repairs.utils.assign_warranty_claim"
 	},
 	"Serial No": {

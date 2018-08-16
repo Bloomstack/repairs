@@ -1,6 +1,7 @@
 frappe.ui.form.on("Warranty Claim", {
 	refresh: (frm) => {
 		frm.add_fetch('item_code', 'item_group', 'item_group');
+		frm.add_fetch('item_code', 'standard_rate', 'fee');
 
 		frm.fields_dict.item_code.get_query = (doc, cdt, cdn) => {
 			return {
@@ -80,31 +81,19 @@ frappe.ui.form.on("Warranty Claim", {
 			// Start testing the item
 			if (frm.doc.status == "To Test") {
 				var repair_btn = frm.add_custom_button(__("Test Item"), () => {
-					var d = new frappe.ui.Dialog({
-						title: __("Testing Results"),
-						fields: [
-							{
-								label: __("Enter Results"),
-								fieldname: "testing_details",
-								fieldtype: "Text",
-								reqd: 1
-							}
-						],
-						primary_action: () => {
-							var data = d.get_values();
-
-							frm.set_value("status", "To Repair");
-							frm.set_value("billing_status", frm.doc.is_under_warranty ? "Under Warranty" : "To Bill");
-							frm.set_value("tested_by", frappe.session.user);
-							frm.set_value("testing_date", frappe.datetime.now_datetime());
-							frm.set_value("testing_details", data.testing_details);
-							frm.save();
-
-							d.hide();
-						},
-						primary_action_label: __("Record")
-					});
-					d.show();
+					frappe.prompt({
+						label: __("Enter Results"),
+						fieldname: "testing_details",
+						fieldtype: "Text",
+						reqd: 1
+					}, (data) => {
+						frm.set_value("status", "To Repair");
+						frm.set_value("billing_status", frm.doc.is_under_warranty ? "Under Warranty" : "To Bill");
+						frm.set_value("tested_by", frappe.session.user);
+						frm.set_value("testing_date", frappe.datetime.now_datetime());
+						frm.set_value("testing_details", data.testing_details);
+						frm.save();
+					}, __("Testing Results"), __("Record"));
 				});
 				repair_btn.addClass('btn-primary');
 			};

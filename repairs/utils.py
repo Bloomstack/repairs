@@ -67,6 +67,12 @@ def set_iem_owner(warranty_claim, method):
 		warranty_claim.iem_owner = frappe.db.get_value("IEM Owner", {"impression_id": impression_id}, "name")
 
 
+def validate_service_qty(warranty_claim, method):
+	for service in warranty_claim.services:
+		if service.qty == 0:
+			frappe.throw("Quantity cannot be zero for Row #{0}: {1}".format(service.idx, service.item_code))
+
+
 def assign_warranty_claim(warranty_claim, method):
 	if not frappe.get_all("ToDo", filters={"reference_type": "Warranty Claim", "reference_name": warranty_claim.name}):
 		repair_settings = frappe.get_doc("Repair Settings")
@@ -165,8 +171,9 @@ def make_mapped_doc(target_dt, source_dn, target_doc, target_cdt=None, filters=N
 
 	if target_cdt:
 		table_map.update({
-			"Repair Claim Services": {
-				"doctype": target_cdt
+			"Warranty Claim Services": {
+				"doctype": target_cdt,
+				"field_map": field_map
 			}
 		})
 

@@ -29,14 +29,14 @@ def make_quotation(source_name, target_doc=None):
 	def set_missing_values(source, target):
 		target.order_type = "Maintenance"
 
-	target_doc = make_mapped_doc("Quotation", source_name, target_doc, target_cdt="Quotation Item", postprocess=set_missing_values)
+	field_map = {
+		"fee": "rate",
+		"notes": "instructions"
+	}
 
-	for item in target_doc.items:
-		item.qty = 1
-
-	target_doc.save()
-
-	return target_doc
+	return make_mapped_doc("Quotation", source_name, target_doc,
+							target_cdt="Quotation Item", field_map=field_map,
+							postprocess=set_missing_values)
 
 
 @frappe.whitelist()
