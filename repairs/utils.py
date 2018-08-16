@@ -41,6 +41,12 @@ def set_missing_values(warranty_claim, method):
 		})
 
 
+def validate_missing_serial_no(warranty_claim, method):
+	if warranty_claim.item_group == "Custom":
+		if not (warranty_claim.serial_no or warranty_claim.unlinked_serial_no):
+			frappe.throw("Custom products must have a serial number")
+
+
 def validate_serial_no_warranty(serial_no, method):
 	# Remove warranty period for old manufactured items that are not in the system
 	if serial_no.purchase_document_no:

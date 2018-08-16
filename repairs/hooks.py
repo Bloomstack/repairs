@@ -84,6 +84,7 @@ doc_events = {
 		"before_insert": "repairs.utils.set_missing_values",
 		"after_insert": "repairs.utils.receive_stock_item",
 		"validate": [
+			"repairs.utils.validate_missing_serial_no",
 			"repairs.utils.set_iem_owner",
 			"repairs.utils.validate_service_qty"
 		],

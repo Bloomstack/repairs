@@ -29,23 +29,6 @@ frappe.ui.form.on("Warranty Claim", {
 			return { filters: { "item_group": "Services" } };
 		};
 
-		frm.fields_dict.iem_owner.get_query = (doc, cdt, cdn) => {
-			var serial_no = frm.doc.serial_no || frm.doc.unlinked_serial_no
-			var impression_id = ""
-
-			if (serial_no) {
-				impression_id = serial_no.split("-")[1]
-			}
-
-			return {
-				query: "repairs.api.get_iem_owners",
-				filters: {
-					"customer": doc.customer,
-					"impression_id": impression_id
-				}
-			};
-		};
-
 		if (!frm.doc.__islocal) {
 			// Reopen and close the document
 			if (frm.doc.status != "Closed") {
