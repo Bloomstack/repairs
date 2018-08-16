@@ -54,6 +54,7 @@ frappe.ui.form.on("Warranty Claim", {
 						},
 						callback: (r) => {
 							if (!r.exc) {
+								frm.set_value("received_date", frappe.datetime.now_datetime());
 								frm.reload_doc();
 							}
 						}
