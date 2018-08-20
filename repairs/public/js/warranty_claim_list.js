@@ -3,6 +3,8 @@ frappe.listview_settings["Warranty Claim"] = {
 	get_indicator: (doc) => {
 		if (doc.status == "Closed") {
 			return [__(doc.status), "red", "status,=," + doc.status];
+		} else if (doc.status == "Offline") {
+			return [__(doc.status), "darkgrey", "status,=," + doc.status];
 		} else if (in_list(["To Receive", "To Test", "To Repair", "To Deliver"], doc.status)) {
 			return [__(doc.status), "orange", "status,=," + doc.status];
 		} else if (in_list(["Completed", "Repairing"], doc.status)) {
