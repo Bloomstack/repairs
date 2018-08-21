@@ -169,4 +169,12 @@ frappe.ui.form.on("Warranty Claim", {
 			};
 		}
 	},
+
+	item_received: function (frm) {
+		if (frm.doc.item_received) {
+			frm.set_value("status", "To Test");
+		} else {
+			frm.set_value("status", "To Receive");
+		}
+	},
 });
