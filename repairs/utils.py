@@ -62,13 +62,22 @@ def set_iem_owner(warranty_claim, method):
 
 		if not impression_id:
 			# Split the serial number to retrieve the IID (serial number format: JH{IEM model shorthand}-{IID}-{count})
-			impression_id = serial_no.split("-")[1]
+			impression_id = serial_no.split("-")
 
-			if frappe.db.exists("Serial No", serial_no):
-				iem_owner = frappe.db.get_value("IEM Owner", {"impression_id": impression_id}, "name")
+			if len(impression_id) > 1:
+				impression_id = impression_id[1]
+			else:
+				try:
+					impression_id = int(impression_id[0])
+				except ValueError:
+					return
 
-				frappe.db.set_value("Serial No", serial_no, "impression_id", impression_id)
-				frappe.db.set_value("Serial No", serial_no, "iem_owner", iem_owner)
+			if impression_id:
+				if frappe.db.exists("Serial No", serial_no):
+					iem_owner = frappe.db.get_value("IEM Owner", {"impression_id": impression_id}, "name")
+
+					frappe.db.set_value("Serial No", serial_no, "impression_id", impression_id)
+					frappe.db.set_value("Serial No", serial_no, "iem_owner", iem_owner)
 
 		warranty_claim.iem_owner = frappe.db.get_value("IEM Owner", {"impression_id": impression_id}, "name")
 
