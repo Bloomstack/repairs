@@ -29,21 +29,7 @@ frappe.ui.form.on("Warranty Claim", {
 			return { filters: { "item_group": "Services" } };
 		};
 
-		if (!frm.doc.__islocal) {
-			// Reopen and close the document
-			if (frm.doc.status != "Closed") {
-				frm.add_custom_button(__("Close"), () => {
-					frm.set_value("previous_status", frm.doc.status);
-					frm.set_value("status", "Closed");
-					frm.save();
-				});
-			} else {
-				frm.add_custom_button(__("Reopen"), () => {
-					frm.set_value("status", frm.doc.previous_status);
-					frm.save();
-				});
-			}
-
+		if (!frm.doc.__islocal && frm.doc.status != "Completed") {
 			// Receive the item from the customer
 			if (!frm.doc.item_received) {
 				frm.add_custom_button(__("Stock Receipt"), () => {
@@ -158,7 +144,7 @@ frappe.ui.form.on("Warranty Claim", {
 			};
 
 			// Finally, make the delivery back to the customer
-			if (!in_list(["To Receive", "Closed", "Completed"], frm.doc.status)) {
+			if (!in_list(["To Receive", "Completed"], frm.doc.status) && frm.doc.billing_status != "To Bill") {
 				frm.add_custom_button(__("Delivery"), () => {
 					frappe.model.open_mapped_doc({
 						method: "repairs.api.make_delivery_note",

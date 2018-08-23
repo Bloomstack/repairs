@@ -1,7 +1,7 @@
 <div class="web-list-item transaction-list-item">
     <a href="/warranty-and-repair?name={{ doc.name }}">
         <div class="row">
-            <div class="col-sm-3">
+            <div class="col-sm-2">
                 {% if(doc.status in ("To Receive", "To Test", "To Repair", "To Deliver", "Repairing")) %}
                     <span class="indicator small orange">
                         {{ doc.name }}
@@ -19,7 +19,12 @@
                     {{ doc.status.replace("To", "Pending").replace("Deliver", "Delivery") }}
                 </div>
             </div>
-            <div class="col-sm-3">
+            <div class="col-sm-2">
+                <div class="text-muted">
+                    {{ doc.complaint_date }}
+                </div>
+            </div>
+            <div class="col-sm-2">
                 <div class="text-muted">
                     {{ doc.serial_no or doc.unlinked_serial_no or "" }}
                 </div>
@@ -31,7 +36,17 @@
             </div>
             <div class="col-sm-3">
                 <div class="text-right text-muted">
-                    {{ doc.service_address or doc.address_display or "" }}
+                    {% set delivery_note = frappe.db.get_value("Delivery Note", {"warranty_claim": doc.name}) %}
+                    {% if delivery_note %}
+                        {% set shipment_note = frappe.get_doc("DTI Shipment Note", {"delivery_note": delivery_note}) %}
+                        {% if shipment_note %}
+                            {% set tracking_numbers = [] %}
+                            {% for box in shipment_note.box_list %}
+                                {% set __ = tracking_numbers.append(box.tracking_number) %}
+                            {% endfor %}
+                            FedEx Tracking numbers: {{ tracking_numbers | join(", ") }}
+                        {% endif %}
+                    {% endif %}
                 </div>
             </div>
         </div>
