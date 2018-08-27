@@ -71,11 +71,13 @@ frappe.ui.form.on("Warranty Claim", {
 			// Start the sales cycle for the customer
 			if (frm.doc.billing_status == "To Bill") {
 				frm.add_custom_button(__("Quotation"), () => {
-					frappe.model.open_mapped_doc({
-						method: "repairs.api.make_quotation",
-						frm: frm,
-						run_link_triggers: true
-					});
+					if (!frm.doc.services.length) {
+						frappe.confirm(__("Do you want to create a Quotation without services?"), () => {
+							frm.trigger("make_quotation");
+						});
+					} else {
+						frm.trigger("make_quotation");
+					};
 				}, __("Make"));
 			};
 
@@ -91,59 +93,7 @@ frappe.ui.form.on("Warranty Claim", {
 				repair_btn.addClass('btn-primary');
 			};
 
-			// Finish repairing the item (with or without items)
-			if (frm.doc.status == "Repairing") {
-				var repair_btn = frm.add_custom_button(__("Finish Repair"), () => {
-					var d = new frappe.ui.Dialog({
-						title: __("Repair Results"),
-						fields: [
-							{
-								label: __("With Items"),
-								fieldname: "with_items",
-								fieldtype: "Check",
-								reqd: 0
-							},
-							{
-								label: __("Enter Results"),
-								fieldname: "resolution_details",
-								fieldtype: "Text",
-								reqd: 1
-							}
-						],
-						primary_action: () => {
-							var data = d.get_values();
-
-							if (data.with_items) {
-								frappe.model.open_mapped_doc({
-									method: "repairs.api.finish_repair",
-									frm: frm
-								});
-							}
-
-							frappe.call({
-								method: "repairs.api.complete_production_order",
-								args: { doc: frm.doc.name },
-								callback: (r) => {
-									if (!r.exc) {
-										frm.set_value("status", "To Deliver");
-										frm.set_value("resolved_by", frappe.session.user);
-										frm.set_value("resolution_date", frappe.datetime.now_datetime());
-										frm.set_value("resolution_details", data.resolution_details);
-										frm.save();
-
-										d.hide();
-									}
-								}
-							})
-						},
-						primary_action_label: __("Finish")
-					});
-					d.show();
-				});
-				repair_btn.addClass('btn-primary');
-			};
-
-			// Finally, make the delivery back to the customer
+			// Once repair is completed, make the delivery back to the customer
 			if (!in_list(["To Receive", "Completed"], frm.doc.status) && frm.doc.billing_status != "To Bill") {
 				frm.add_custom_button(__("Delivery"), () => {
 					frappe.model.open_mapped_doc({
@@ -162,5 +112,13 @@ frappe.ui.form.on("Warranty Claim", {
 		} else {
 			frm.set_value("status", "To Receive");
 		}
+	},
+
+	make_quotation: function (frm) {
+		frappe.model.open_mapped_doc({
+			method: "repairs.api.make_quotation",
+			frm: frm,
+			run_link_triggers: true
+		});
 	},
 });

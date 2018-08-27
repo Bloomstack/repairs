@@ -94,7 +94,10 @@ doc_events = {
 		"before_submit": "repairs.utils.validate_serial_no_warranty"
 	},
 	"Stock Entry": {
-		"on_submit": "repairs.status_updater.stock_entry",
+		"on_submit": [
+			"repairs.status_updater.stock_entry",
+			"repairs.utils.complete_production_order"
+		],
 		"on_cancel": "repairs.status_updater.stock_entry"
 	},
 	"Sales Invoice": {

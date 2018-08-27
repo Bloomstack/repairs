@@ -138,6 +138,24 @@ def set_delivery_date(dti_shipment_note, method):
 	warranty_claim.save()
 
 
+def complete_production_order(stock_entry, method):
+	if method == "on_submit":
+		if stock_entry.warranty_claim and stock_entry.purpose == "Material Transfer":
+			update_fields = {
+				"produced_qty": 1,
+				"status": "Completed"
+			}
+
+			frappe.db.set_value("Production Order", {"warranty_claim": stock_entry.warranty_claim}, update_fields, val=None)
+			frappe.db.commit()
+
+			warranty_claim = frappe.get_doc("Warranty Claim", stock_entry.warranty_claim)
+			if warranty_claim.status == "Repairing":
+				warranty_claim.status = "To Deliver"
+				warranty_claim.resolution_date = frappe.utils.now_datetime()
+				warranty_claim.save()
+
+
 def create_stock_entry(warranty_claim):
 	to_warehouse = frappe.db.get_single_value("Repair Settings", "default_incoming_warehouse")
 	serial_no = warranty_claim.serial_no or warranty_claim.unlinked_serial_no

@@ -46,20 +46,6 @@ def start_repair(source_name, target_doc=None):
 
 
 @frappe.whitelist()
-def finish_repair(source_name, target_doc=None):
-	def set_missing_values(source, target):
-		target.purpose = "Material Issue"
-
-	return make_mapped_doc("Stock Entry", source_name, target_doc, postprocess=set_missing_values, check_for_existing=False)
-
-
-@frappe.whitelist()
-def complete_production_order(doc):
-	frappe.db.set_value("Production Order", {"warranty_claim": doc}, "status", "Completed")
-	frappe.db.commit()
-
-
-@frappe.whitelist()
 def make_delivery_note(source_name, target_doc=None):
 	def _set_child_fields(source_doc, target_doc, source_parent):
 		target_doc.update({

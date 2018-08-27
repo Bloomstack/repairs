@@ -39,7 +39,7 @@ def production_order(doc, method):
 			if get_item_status(doc.warranty_claim) == "To Repair":
 				set_item_status(doc.warranty_claim, "Repairing")
 		elif method == "on_cancel":
-			if get_billing_status(doc.warranty_claim) == "Repairing":
+			if get_item_status(doc.warranty_claim) == "Repairing":
 				set_item_status(doc.warranty_claim, "To Repair")
 
 
@@ -51,7 +51,7 @@ def dti_shipment_note(doc, method):
 			if get_item_status(warranty_claim) == "To Deliver":
 				set_item_status(warranty_claim, "Completed")
 		elif method == "on_cancel":
-			if get_billing_status(warranty_claim) == "Completed":
+			if get_item_status(warranty_claim) == "Completed":
 				set_item_status(warranty_claim, "To Deliver")
 
 

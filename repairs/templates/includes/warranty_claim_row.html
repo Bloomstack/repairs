@@ -44,7 +44,7 @@
                             {% for box in shipment_note.box_list %}
                                 {% set __ = tracking_numbers.append(box.tracking_number) %}
                             {% endfor %}
-                            FedEx Tracking numbers: {{ tracking_numbers | join(", ") }}
+                            Shipment tracking numbers: {{ tracking_numbers | join(", ") }}
                         {% endif %}
                     {% endif %}
                 </div>
