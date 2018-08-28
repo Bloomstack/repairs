@@ -26,7 +26,10 @@ app_license = "MIT"
 # page_js = {"page" : "public/js/file.js"}
 
 # include js in doctype views
-doctype_js = {"Warranty Claim": "public/js/warranty_claim.js"}
+doctype_js = {
+	"Warranty Claim": "public/js/warranty_claim.js",
+	"Production Order": "public/js/production_order.js"
+}
 doctype_list_js = {"Warranty Claim": "public/js/warranty_claim_list.js"}
 # doctype_tree_js = {"doctype" : "public/js/doctype_tree.js"}
 # doctype_calendar_js = {"doctype" : "public/js/doctype_calendar.js"}
@@ -85,8 +88,7 @@ doc_events = {
 		"after_insert": "repairs.utils.receive_stock_item",
 		"validate": [
 			"repairs.utils.validate_missing_serial_no",
-			"repairs.utils.set_iem_owner",
-			"repairs.utils.validate_service_qty"
+			"repairs.utils.set_iem_owner"
 		],
 		"on_update": "repairs.utils.assign_warranty_claim"
 	},

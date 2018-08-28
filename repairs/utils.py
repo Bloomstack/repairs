@@ -1,6 +1,7 @@
 import frappe
 from awesome_cart.compat.customer import get_current_customer
 from erpnext.stock.doctype.stock_entry.stock_entry_utils import make_stock_entry
+from frappe import _
 from frappe.contacts.doctype.contact.contact import get_default_contact
 from frappe.core.doctype.role.role import get_emails_from_role
 from frappe.desk.form import assign_to
@@ -44,7 +45,7 @@ def set_missing_values(warranty_claim, method):
 def validate_missing_serial_no(warranty_claim, method):
 	if warranty_claim.item_group == "Custom":
 		if not (warranty_claim.serial_no or warranty_claim.unlinked_serial_no):
-			frappe.throw("Custom products must have a serial number")
+			frappe.throw(_("Custom products must have a serial number"))
 
 
 def validate_serial_no_warranty(serial_no, method):
@@ -80,12 +81,6 @@ def set_iem_owner(warranty_claim, method):
 					frappe.db.set_value("Serial No", serial_no, "iem_owner", iem_owner)
 
 		warranty_claim.iem_owner = frappe.db.get_value("IEM Owner", {"impression_id": impression_id}, "name")
-
-
-def validate_service_qty(warranty_claim, method):
-	for service in warranty_claim.services:
-		if service.qty == 0:
-			frappe.throw("Quantity cannot be zero for Row #{0}: {1}".format(service.idx, service.item_code))
 
 
 def assign_warranty_claim(warranty_claim, method):
@@ -221,9 +216,9 @@ def make_mapped_doc(target_dt, source_dn, target_doc, target_cdt=None, filters=N
 			}
 		})
 
-	# Multiple stock entries can be made against Warranty Claim
+	# Multiple quotations and stock entries can be made against Warranty Claim
 	if check_for_existing:
 		if frappe.get_all(target_dt, filters=filters):
-			return
+			frappe.throw(_("A {0} document already exists for this request.".format(target_dt)))
 
 	return get_mapped_doc("Warranty Claim", source_dn, table_map, target_doc, postprocess=postprocess)
