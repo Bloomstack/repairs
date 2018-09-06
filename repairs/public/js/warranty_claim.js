@@ -1,4 +1,8 @@
 frappe.ui.form.on("Warranty Claim", {
+	setup: (frm) => {
+		frm.set_query('shipping_address', erpnext.queries.address_query);
+	},
+
 	refresh: (frm) => {
 		frm.add_fetch('item_code', 'item_group', 'item_group');
 
@@ -168,6 +172,10 @@ frappe.ui.form.on("Warranty Claim", {
 		} else {
 			frm.set_value("status", "To Receive");
 		}
+	},
+
+	shipping_address: function (frm) {
+		erpnext.utils.get_address_display(frm, "shipping_address", "service_address");
 	},
 
 	make_quotation: function (frm) {
