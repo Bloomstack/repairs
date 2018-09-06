@@ -18,7 +18,7 @@
  "is_standard": 1, 
  "login_required": 1, 
  "max_attachment_size": 0, 
- "modified": "2018-08-27 06:11:52.412064", 
+ "modified": "2018-09-06 02:47:11.776121", 
  "modified_by": "Administrator", 
  "module": "Repairs", 
  "name": "warranty-and-repair", 
@@ -72,17 +72,6 @@
    "label": "Issue", 
    "max_length": 0, 
    "max_value": 0, 
-   "read_only": 1, 
-   "reqd": 0
-  }, 
-  {
-   "fieldname": "issue_category", 
-   "fieldtype": "Select", 
-   "hidden": 0, 
-   "label": "Issue Category", 
-   "max_length": 0, 
-   "max_value": 0, 
-   "options": "\nFit Issue\nSound Issue\nPhysical Damage\nOther", 
    "read_only": 1, 
    "reqd": 0
   }, 

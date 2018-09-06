@@ -82,10 +82,12 @@ frappe.ui.form.on("Warranty Claim", {
 						{ fieldname: "sb_socket", fieldtype: "Section Break" },
 						{ label: __("LEFT SOCKET"), fieldname: "cb_left_socket", fieldtype: "Column Break" },
 						{ label: __("Broken"), fieldname: "left_broken_socket", fieldtype: "Check" },
+						{ label: __("Swap"), fieldname: "left_swap_socket", fieldtype: "Check" },
 						{ label: __("Worn Out"), fieldname: "left_worn_out_socket", fieldtype: "Check" },
 						{ label: __("Spinning / Loose"), fieldname: "left_loose_socket", fieldtype: "Check" },
 						{ label: __("RIGHT SOCKET"), fieldname: "cb_right_socket", fieldtype: "Column Break" },
 						{ label: __("Broken"), fieldname: "right_broken_socket", fieldtype: "Check" },
+						{ label: __("Swap"), fieldname: "right_swap_socket", fieldtype: "Check" },
 						{ label: __("Worn Out"), fieldname: "right_worn_out_socket", fieldtype: "Check" },
 						{ label: __("Spinning / Loose"), fieldname: "right_loose_socket", fieldtype: "Check" },
 
