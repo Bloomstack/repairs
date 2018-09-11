@@ -17,16 +17,22 @@ def make_quotation(source_name, target_doc=None):
 	def set_missing_values(source, target):
 		target.order_type = "Maintenance"
 
-	field_map = {"notes": "instructions"}
+	field_map = {"testing_details": "instructions"}
 
 	target_doc = make_mapped_doc("Quotation", source_name, target_doc,
 								target_cdt="Quotation Item", field_map=field_map,
 								postprocess=set_missing_values, check_for_existing=False)
 	source_doc = frappe.get_doc("Warranty Claim", source_name)
 
+	# Update Quotation Item with owner and item details
 	items = []
 	for idx, service in enumerate(source_doc.services):
 		quotation_item_row = target_doc.items[idx]
+
+		quotation_item_row.update({
+			"iem_owner": source_doc.iem_owner,
+			"designer_owner_email": source_doc.contact_email
+		})
 
 		if quotation_item_row.item_code:
 			if service.ear_side in ["Left", "Right"]:

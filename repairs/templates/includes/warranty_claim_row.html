@@ -38,7 +38,7 @@
                 <div class="text-right text-muted">
                     {% set delivery_note = frappe.db.get_value("Delivery Note", {"warranty_claim": doc.name}) %}
                     {% if delivery_note %}
-                        {% set shipment_note = frappe.get_doc("DTI Shipment Note", {"delivery_note": delivery_note}) %}
+                        {% set shipment_note = frappe.get_doc({"doctype": "DTI Shipment Note", "delivery_note": delivery_note}) %}
                         {% if shipment_note %}
                             {% set tracking_numbers = [] %}
                             {% for box in shipment_note.box_list %}
