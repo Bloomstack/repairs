@@ -4,17 +4,19 @@
 frappe.ui.form.on("Quotation", {
 	refresh: (frm) => {
 		frm.add_custom_button(__("Warranty Claim"), () => {
-			frm.trigger("getServiceItems");
+			frm.trigger("get_service_items");
 		}, __("Get items from"));
 	},
 
 	onload_post_render: (frm) => {
+		// Load the "Get Items" dialog if a Quotation is created
+		// from a Warranty Claim, if more Claims are to be added
 		if (frm.doc.__islocal && frm.doc.warranty_claim) {
-			frm.trigger("getServiceItems");
+			frm.trigger("get_service_items");
 		}
 	},
 
-	getServiceItems: (frm) => {
+	get_service_items: (frm) => {
 		erpnext.utils.map_current_doc({
 			method: "repairs.api.make_quotation",
 			source_doctype: "Warranty Claim",
