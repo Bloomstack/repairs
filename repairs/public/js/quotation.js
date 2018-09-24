@@ -1,17 +1,20 @@
-frappe.ui.form.on('Quotation', {
+/* global frappe, erpnext, __ */
+/* eslint camelcase: ["error", { properties: "never"} ] */
+
+frappe.ui.form.on("Quotation", {
 	refresh: (frm) => {
-		frm.add_custom_button(__('Warranty Claim'), () => {
-			frm.trigger("get_service_items");
+		frm.add_custom_button(__("Warranty Claim"), () => {
+			frm.trigger("getServiceItems");
 		}, __("Get items from"));
 	},
 
 	onload_post_render: (frm) => {
 		if (frm.doc.__islocal && frm.doc.warranty_claim) {
-			frm.trigger("get_service_items");
+			frm.trigger("getServiceItems");
 		}
 	},
 
-	get_service_items: (frm) => {
+	getServiceItems: (frm) => {
 		erpnext.utils.map_current_doc({
 			method: "repairs.api.make_quotation",
 			source_doctype: "Warranty Claim",
@@ -26,6 +29,6 @@ frappe.ui.form.on('Quotation', {
 				status: ["not in", ["Completed", "Offline", "Declined", "Cancelled"]],
 				billing_status: "To Bill"
 			}
-		})
+		});
 	}
 });
