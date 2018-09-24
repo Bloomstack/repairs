@@ -17,37 +17,23 @@ def make_quotation(source_name, target_doc=None):
 	def set_missing_values(source, target):
 		target.order_type = "Maintenance"
 
+	def set_item_details(obj, target, source_parent):
+		target.iem_owner = source_parent.iem_owner
+		target.designer_owner_email = source_parent.contact_email
+
+		if obj.ear_side in ["Left", "Right"]:
+			target.qty = 1
+		elif obj.ear_side == "Both":
+			target.qty = 2
+		else:
+			target.qty = 0
+
 	field_map = {"testing_details": "instructions"}
 
-	target_doc = make_mapped_doc("Quotation", source_name, target_doc,
-								target_cdt="Quotation Item", field_map=field_map,
-								postprocess=set_missing_values, check_for_existing=False)
-	source_doc = frappe.get_doc("Warranty Claim", source_name)
-
-	# Update Quotation Item with owner and item details
-	items = []
-	for idx, service in enumerate(source_doc.services):
-		quotation_item_row = target_doc.items[idx]
-
-		quotation_item_row.update({
-			"iem_owner": source_doc.iem_owner,
-			"designer_owner_email": source_doc.contact_email
-		})
-
-		if quotation_item_row.item_code:
-			if service.ear_side in ["Left", "Right"]:
-				qty = 1
-			elif service.ear_side == "Both":
-				qty = 2
-			else:
-				qty = 0
-
-			quotation_item_row.qty = qty
-			items.append(quotation_item_row)
-
-	target_doc.set("items", items)
-
-	return target_doc
+	return make_mapped_doc("Quotation", source_name, target_doc,
+							target_cdt="Quotation Item", field_map=field_map,
+							postprocess=set_missing_values, cdt_postprocess=set_item_details,
+							check_for_existing=False)
 
 
 @frappe.whitelist()

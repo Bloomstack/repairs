@@ -19,7 +19,24 @@ def get_data():
 			"items": [
 				{
 					"type": "doctype",
+					"name": "Issue Type"
+				},
+				{
+					"type": "doctype",
+					"name": "Fit Correction Group"
+				}
+			]
+		},
+		{
+			"label": _("Settings"),
+			"items": [
+				{
+					"type": "doctype",
 					"name": "Repair Settings"
+				},
+				{
+					"type": "doctype",
+					"name": "Fit Correction Settings"
 				}
 			]
 		}

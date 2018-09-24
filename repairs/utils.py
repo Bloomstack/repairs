@@ -194,7 +194,7 @@ def create_stock_entry(warranty_claim):
 
 
 def make_mapped_doc(target_dt, source_dn, target_doc, target_cdt=None, filters=None,
-					field_map=None, postprocess=None, check_for_existing=True):
+					field_map=None, postprocess=None, child_postprocess=None, check_for_existing=True):
 	if not field_map:
 		field_map = {}
 
@@ -212,7 +212,8 @@ def make_mapped_doc(target_dt, source_dn, target_doc, target_cdt=None, filters=N
 		table_map.update({
 			"Warranty Claim Services": {
 				"doctype": target_cdt,
-				"field_map": field_map
+				"field_map": field_map,
+				"postprocess": child_postprocess
 			}
 		})
 
