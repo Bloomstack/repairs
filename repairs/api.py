@@ -32,7 +32,7 @@ def make_quotation(source_name, target_doc=None):
 
 	return make_mapped_doc("Quotation", source_name, target_doc,
 							target_cdt="Quotation Item", field_map=field_map,
-							postprocess=set_missing_values, cdt_postprocess=set_item_details,
+							postprocess=set_missing_values, child_postprocess=set_item_details,
 							check_for_existing=False)
 
 
