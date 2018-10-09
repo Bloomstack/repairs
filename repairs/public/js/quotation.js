@@ -10,9 +10,20 @@ frappe.ui.form.on("Quotation", {
 
 	onload_post_render: (frm) => {
 		// Load the "Get Items" dialog if a Quotation is created
-		// from a Warranty Claim, if more Claims are to be added
+		// from a Warranty Claim to allow user to add other Claims
+		// from the same Customer, if any
 		if (frm.doc.__islocal && frm.doc.warranty_claim) {
-			frm.trigger("get_service_items");
+			frappe.call({
+				method: "repairs.api.get_customer_claim_count",
+				args: {
+					warranty_claim: frm.doc.warranty_claim
+				},
+				callback: (r) => {
+					if (r.message.count > 1) {
+						frm.trigger("get_service_items");
+					}
+				}
+			});
 		}
 	},
 
@@ -27,7 +38,8 @@ frappe.ui.form.on("Quotation", {
 				status: ""
 			},
 			get_query_filters: {
-				company: frm.doc.company,
+				name: ["!=", frm.doc.warranty_claim],
+				customer: frm.doc.customer,
 				status: ["not in", ["Completed", "Offline", "Declined", "Cancelled"]],
 				billing_status: "To Bill"
 			}

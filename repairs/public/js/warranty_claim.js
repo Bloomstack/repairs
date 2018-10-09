@@ -100,10 +100,6 @@ frappe.ui.form.on("Warranty Claim", {
 					]
 
 					frappe.prompt(fields, (data) => {
-						frm.set_value("status", "To Repair");
-						frm.set_value("tested_by", frappe.session.user);
-						frm.set_value("testing_date", frappe.datetime.now_datetime());
-
 						for (var result in data) {
 							if (result != "testing_details" && data[result]) {
 								var issue_details = result.split("_");
@@ -121,7 +117,10 @@ frappe.ui.form.on("Warranty Claim", {
 							}
 						};
 
-						frm.doc.testing_details = data["testing_details"];
+						frm.set_value("status", "To Repair");
+						frm.set_value("tested_by", frappe.session.user);
+						frm.set_value("testing_date", frappe.datetime.now_datetime());
+						frm.set_value("testing_details", data["testing_details"]);
 						frm.save();
 					}, __("Testing Results"), __("Record"));
 				});
@@ -131,7 +130,7 @@ frappe.ui.form.on("Warranty Claim", {
 			// Start the sales cycle for the customer
 			if (frm.doc.billing_status == "To Bill") {
 				frm.add_custom_button(__("Quotation"), () => {
-					if (!frm.doc.services.length) {
+					if (!frm.doc.services.length && frm.doc.status != "To Receive") {
 						frappe.confirm(__("Do you want to create a Quotation without services?"), () => {
 							frm.trigger("make_quotation");
 						});
