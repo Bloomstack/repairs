@@ -5,6 +5,18 @@ from .utils import create_stock_entry, make_mapped_doc
 
 
 @frappe.whitelist()
+def get_customer_claim_count(warranty_claim):
+	customer = frappe.db.get_value("Warranty Claim", warranty_claim, "customer")
+	status_check = ["NOT IN", ["Completed", "Offline", "Declined", "Cancelled"]]
+
+	warranty_claims = frappe.get_all("Warranty Claim",
+									filters={"customer": customer,
+											"status": status_check})
+
+	return {"count": len(warranty_claims)}
+
+
+@frappe.whitelist()
 def make_stock_entry_from_warranty_claim(doc):
 	doc = frappe.get_doc("Warranty Claim", doc)
 	stock_entry_name = create_stock_entry(doc)
@@ -32,7 +44,7 @@ def make_quotation(source_name, target_doc=None):
 
 	return make_mapped_doc("Quotation", source_name, target_doc,
 							target_cdt="Quotation Item", field_map=field_map,
-							postprocess=set_missing_values, cdt_postprocess=set_item_details,
+							postprocess=set_missing_values, child_postprocess=set_item_details,
 							check_for_existing=False)
 
 
