@@ -123,14 +123,17 @@ def receive_stock_item(warranty_claim, method):
 
 
 def set_delivery_date(dti_shipment_note, method):
-	warranty_claim = frappe.get_doc("Warranty Claim", frappe.db.get_value("Delivery Note", dti_shipment_note.delivery_note, "warranty_claim"))
+	warranty_claim = frappe.db.get_value("Delivery Note", dti_shipment_note.delivery_note, "warranty_claim")
 
-	if method == "on_submit":
-		warranty_claim.delivery_date = frappe.utils.now_datetime()
-	elif method == "on_cancel":
-		warranty_claim.delivery_date = None
+	if warranty_claim:
+		warranty_claim = frappe.get_doc("Warranty Claim", warranty_claim)
 
-	warranty_claim.save()
+		if method == "on_submit":
+			warranty_claim.delivery_date = frappe.utils.now_datetime()
+		elif method == "on_cancel":
+			warranty_claim.delivery_date = None
+
+		warranty_claim.save()
 
 
 def complete_production_order(stock_entry, method):
