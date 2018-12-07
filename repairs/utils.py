@@ -122,16 +122,16 @@ def receive_stock_item(warranty_claim, method):
 		create_stock_entry(warranty_claim)
 
 
-def set_delivery_date(dti_shipment_note, method):
+def set_shipping_date(dti_shipment_note, method):
 	warranty_claim = frappe.db.get_value("Delivery Note", dti_shipment_note.delivery_note, "warranty_claim")
 
 	if warranty_claim:
 		warranty_claim = frappe.get_doc("Warranty Claim", warranty_claim)
 
 		if method == "on_submit":
-			warranty_claim.delivery_date = frappe.utils.now_datetime()
+			warranty_claim.shipping_date = frappe.utils.now_datetime()
 		elif method == "on_cancel":
-			warranty_claim.delivery_date = None
+			warranty_claim.shipping_date = None
 
 		warranty_claim.save()
 

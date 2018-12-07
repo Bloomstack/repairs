@@ -118,11 +118,11 @@ doc_events = {
 	"DTI Shipment Note": {
 		"on_submit": [
 			"repairs.status_updater.dti_shipment_note",
-			"repairs.utils.set_delivery_date"
+			"repairs.utils.set_shipping_date"
 		],
 		"on_cancel": [
 			"repairs.status_updater.dti_shipment_note",
-			"repairs.utils.set_delivery_date"
+			"repairs.utils.set_shipping_date"
 		]
 	}
 }
