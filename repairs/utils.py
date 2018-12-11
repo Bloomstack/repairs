@@ -17,9 +17,11 @@ def set_missing_values(warranty_claim, method):
 
 	warranty_claim.update({
 		"customer_name": customer.customer_name,
-		"contact_email": customer.email_id,
 		"contact_person": get_default_contact("Customer", customer.name)
 	})
+
+	if not warranty_claim.contact_email:
+		warranty_claim.contact_email = customer.email_id
 
 	if not warranty_claim.contact_mobile:
 		warranty_claim.contact_mobile = customer.mobile_no
