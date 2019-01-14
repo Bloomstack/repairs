@@ -5,13 +5,11 @@ from .utils import create_stock_entry, make_mapped_doc
 
 
 @frappe.whitelist()
-def get_customer_claim_count(warranty_claim):
-	customer = frappe.db.get_value("Warranty Claim", warranty_claim, "customer")
+def get_customer_claim_count(customer):
 	status_check = ["NOT IN", ["Completed", "Offline", "Declined", "Cancelled"]]
 
 	warranty_claims = frappe.get_all("Warranty Claim",
-									filters={"customer": customer,
-											"status": status_check})
+		filters={"customer": customer, "status": status_check})
 
 	return {"count": len(warranty_claims)}
 
@@ -25,27 +23,39 @@ def make_stock_entry_from_warranty_claim(doc):
 
 
 @frappe.whitelist()
-def make_quotation(source_name, target_doc=None):
+def get_order_series():
+	return frappe.get_meta("Sales Order").get_field("naming_series").options or ""
+
+
+@frappe.whitelist()
+def get_invoice_series():
+	return frappe.get_meta("Sales Invoice").get_field("naming_series").options or ""
+
+
+@frappe.whitelist()
+def make_sales_order(source_name, target_doc=None):
 	def set_missing_values(source, target):
+		target.naming_series = frappe.db.get_single_value("Repair Settings", "order_naming_series")
 		target.order_type = "Maintenance"
 
-	def set_item_details(obj, target, source_parent):
-		target.iem_owner = source_parent.iem_owner
-		target.designer_owner_email = source_parent.contact_email
+	def set_item_details(source, target, source_parent):
+		target.uom = frappe.db.get_value("Item", source.item_code, "stock_uom")
 
-		if obj.ear_side in ["Left", "Right"]:
+		if source_parent.iem_owner:
+			target.iem_owner = source_parent.iem_owner
+			target.designer_owner_email = source_parent.contact_email
+
+		if not source.ear_side or source.ear_side in ["Left", "Right"]:
 			target.qty = 1
-		elif obj.ear_side == "Both":
+		elif source.ear_side == "Both":
 			target.qty = 2
-		else:
-			target.qty = 0
 
 	field_map = {"testing_details": "instructions"}
 
-	return make_mapped_doc("Quotation", source_name, target_doc,
-							target_cdt="Quotation Item", field_map=field_map,
-							postprocess=set_missing_values, child_postprocess=set_item_details,
-							check_for_existing=False)
+	return make_mapped_doc("Sales Order", source_name, target_doc,
+		target_cdt="Sales Order Item", field_map=field_map,
+		postprocess=set_missing_values, child_postprocess=set_item_details,
+		check_for_existing=False)
 
 
 @frappe.whitelist()

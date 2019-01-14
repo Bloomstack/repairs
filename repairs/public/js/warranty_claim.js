@@ -129,13 +129,13 @@ frappe.ui.form.on("Warranty Claim", {
 
 			// Start the sales cycle for the customer
 			if (frm.doc.billing_status == "To Bill") {
-				frm.add_custom_button(__("Quotation"), () => {
+				frm.add_custom_button(__("Sales Order"), () => {
 					if (!frm.doc.services.length && frm.doc.status != "To Receive") {
-						frappe.confirm(__("Do you want to create a Quotation without services?"), () => {
-							frm.trigger("make_quotation");
+						frappe.confirm(__("Do you want to create a Sales Order without services?"), () => {
+							frm.trigger("make_sales_order");
 						});
 					} else {
-						frm.trigger("make_quotation");
+						frm.trigger("make_sales_order");
 					};
 				}, __("Make"));
 			};
@@ -177,9 +177,9 @@ frappe.ui.form.on("Warranty Claim", {
 		erpnext.utils.get_address_display(frm, "shipping_address", "service_address");
 	},
 
-	make_quotation: function (frm) {
+	make_sales_order: function (frm) {
 		frappe.model.open_mapped_doc({
-			method: "repairs.api.make_quotation",
+			method: "repairs.api.make_sales_order",
 			frm: frm,
 			run_link_triggers: true
 		});

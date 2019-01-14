@@ -222,7 +222,7 @@ def make_mapped_doc(target_dt, source_dn, target_doc, target_cdt=None, filters=N
 			}
 		})
 
-	# Multiple quotations and stock entries can be made against Warranty Claim
+	# Multiple sales orders and stock entries can be made against Warranty Claim
 	if check_for_existing:
 		if frappe.get_all(target_dt, filters=filters):
 			frappe.throw(_("A {0} document already exists for this request.".format(target_dt)))

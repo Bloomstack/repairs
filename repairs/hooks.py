@@ -29,7 +29,8 @@ app_license = "MIT"
 doctype_js = {
 	"Warranty Claim": "public/js/warranty_claim.js",
 	"Production Order": "public/js/production_order.js",
-	"Quotation": "public/js/quotation.js"
+	"Sales Order": "public/js/sales_order.js",
+	"Sales Invoice": "public/js/sales_invoice.js"
 }
 doctype_list_js = {"Warranty Claim": "public/js/warranty_claim_list.js"}
 # doctype_tree_js = {"doctype" : "public/js/doctype_tree.js"}
