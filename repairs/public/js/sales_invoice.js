@@ -9,7 +9,9 @@ frappe.ui.form.on("Sales Invoice", {
 
 		if (frm.is_new() && warranty_claims.length > 0) {
 			frappe.db.get_value('Repair Settings', { name: 'Repair Settings' }, 'invoice_naming_series', (r) => {
-				frm.doc.naming_series = r.invoice_naming_series;
+				if (r.invoice_naming_series) {
+					frm.doc.naming_series = r.invoice_naming_series;
+				}
 			});
 		}
 	}

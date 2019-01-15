@@ -45,7 +45,6 @@ frappe.ui.form.on("Sales Order", {
 			date_field: "complaint_date",
 			setters: {
 				customer: frm.doc.customer,
-				status: ""
 			},
 			get_query_filters: {
 				name: ["NOT IN", warranty_claims],

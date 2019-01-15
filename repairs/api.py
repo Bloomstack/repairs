@@ -23,13 +23,8 @@ def make_stock_entry_from_warranty_claim(doc):
 
 
 @frappe.whitelist()
-def get_order_series():
-	return frappe.get_meta("Sales Order").get_field("naming_series").options or ""
-
-
-@frappe.whitelist()
-def get_invoice_series():
-	return frappe.get_meta("Sales Invoice").get_field("naming_series").options or ""
+def get_doctype_series(doctype):
+	return frappe.get_meta(doctype).get_field("naming_series").options or ""
 
 
 @frappe.whitelist()
@@ -70,7 +65,7 @@ def start_repair(source_name, target_doc=None):
 
 	target_doc = make_mapped_doc("Production Order", source_name, target_doc, field_map=field_map, postprocess=set_missing_values)
 	target_doc.update({
-		"use_multi_level_bom": 0,
+		"naming_series": frappe.db.get_single_value("Repair Settings", "production_naming_series") or target_doc.naming_series,
 		"skip_transfer": 1
 	})
 
@@ -85,9 +80,8 @@ def make_stock_entry_for_repair(production_order_id, repair_item, serial_no):
 	stock_entry = frappe.new_doc("Stock Entry")
 
 	stock_entry.update({
-		"purpose": "Material Transfer",
+		"purpose": "Material Transfer for Manufacture",
 		"production_order": production_order_id,
-		"warranty_claim": production_order.warranty_claim,
 		"from_warehouse": frappe.db.get_single_value("Repair Settings", "default_incoming_warehouse"),
 		"to_warehouse": production_order.fg_warehouse,
 		"items": [{
@@ -95,6 +89,7 @@ def make_stock_entry_for_repair(production_order_id, repair_item, serial_no):
 			"qty": 1,
 			"uom": stock_uom,
 			"stock_uom": stock_uom,
+			"warranty_claim": production_order.warranty_claim,
 			"serial_no": serial_no
 		}]
 	})

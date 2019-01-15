@@ -140,20 +140,23 @@ def set_shipping_date(dti_shipment_note, method):
 
 def complete_production_order(stock_entry, method):
 	if method == "on_submit":
-		if stock_entry.warranty_claim and stock_entry.purpose == "Material Transfer":
-			update_fields = {
-				"produced_qty": 1,
-				"status": "Completed"
-			}
+		if stock_entry.purpose == "Material Transfer for Manufacture":
+			warranty_claim = frappe.db.get_value("Production Order", stock_entry.production_order, "warranty_claim")
 
-			frappe.db.set_value("Production Order", {"warranty_claim": stock_entry.warranty_claim}, update_fields, val=None)
-			frappe.db.commit()
+			if warranty_claim:
+				update_fields = {
+					"produced_qty": 1,
+					"status": "Completed"
+				}
 
-			warranty_claim = frappe.get_doc("Warranty Claim", stock_entry.warranty_claim)
-			if warranty_claim.status == "Repairing":
-				warranty_claim.status = "To Deliver"
-				warranty_claim.resolution_date = frappe.utils.now_datetime()
-				warranty_claim.save()
+				frappe.db.set_value("Production Order", {"warranty_claim": warranty_claim}, update_fields, val=None)
+				frappe.db.commit()
+
+				warranty_claim = frappe.get_doc("Warranty Claim", warranty_claim)
+				if warranty_claim.status == "Repairing":
+					warranty_claim.status = "To Deliver"
+					warranty_claim.resolution_date = frappe.utils.now_datetime()
+					warranty_claim.save()
 
 
 def create_stock_entry(warranty_claim):
@@ -164,7 +167,8 @@ def create_stock_entry(warranty_claim):
 									to_warehouse=to_warehouse, serial_no=serial_no,
 									do_not_save=True)
 
-	stock_entry.warranty_claim = warranty_claim.name
+	for item in stock_entry.items:
+		item.warranty_claim = warranty_claim.name
 
 	# Include the cable and case in the stock receipt, if entered
 	if warranty_claim.cable:

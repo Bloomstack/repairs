@@ -36,7 +36,7 @@ frappe.ui.form.on("Warranty Claim", {
 			return { filters: { "item_group": "Services" } };
 		};
 
-		if (!frm.doc.__islocal && frm.doc.status != "Completed") {
+		if (!frm.is_new() && frm.doc.status != "Completed") {
 			// Receive the item from the customer
 			if (!frm.doc.item_received) {
 				frm.add_custom_button(__("Stock Receipt"), () => {
@@ -49,6 +49,12 @@ frappe.ui.form.on("Warranty Claim", {
 							if (!r.exc) {
 								frm.set_value("received_date", frappe.datetime.now_datetime());
 								frm.reload_doc();
+
+								frappe.db.get_value('Repair Settings', { name: 'Repair Settings' }, 'default_incoming_warehouse', (r) => {
+									if (r.default_incoming_warehouse) {
+										frappe.msgprint(__("The {0} was received in the {1} warehouse", [frm.doc.item_code, r.default_incoming_warehouse]));
+									}
+								});
 							}
 						}
 					});
