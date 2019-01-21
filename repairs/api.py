@@ -5,13 +5,11 @@ from .utils import create_stock_entry, make_mapped_doc
 
 
 @frappe.whitelist()
-def get_customer_claim_count(warranty_claim):
-	customer = frappe.db.get_value("Warranty Claim", warranty_claim, "customer")
+def get_customer_claim_count(customer):
 	status_check = ["NOT IN", ["Completed", "Offline", "Declined", "Cancelled"]]
 
 	warranty_claims = frappe.get_all("Warranty Claim",
-									filters={"customer": customer,
-											"status": status_check})
+		filters={"customer": customer, "status": status_check})
 
 	return {"count": len(warranty_claims)}
 
@@ -25,27 +23,34 @@ def make_stock_entry_from_warranty_claim(doc):
 
 
 @frappe.whitelist()
-def make_quotation(source_name, target_doc=None):
+def get_doctype_series(doctype):
+	return frappe.get_meta(doctype).get_field("naming_series").options or ""
+
+
+@frappe.whitelist()
+def make_sales_order(source_name, target_doc=None):
 	def set_missing_values(source, target):
+		target.naming_series = frappe.db.get_single_value("Repair Settings", "order_naming_series")
 		target.order_type = "Maintenance"
 
-	def set_item_details(obj, target, source_parent):
-		target.iem_owner = source_parent.iem_owner
-		target.designer_owner_email = source_parent.contact_email
+	def set_item_details(source, target, source_parent):
+		target.uom = frappe.db.get_value("Item", source.item_code, "stock_uom")
 
-		if obj.ear_side in ["Left", "Right"]:
+		if source_parent.iem_owner:
+			target.iem_owner = source_parent.iem_owner
+			target.designer_owner_email = source_parent.contact_email
+
+		if not source.ear_side or source.ear_side in ["Left", "Right"]:
 			target.qty = 1
-		elif obj.ear_side == "Both":
+		elif source.ear_side == "Both":
 			target.qty = 2
-		else:
-			target.qty = 0
 
 	field_map = {"testing_details": "instructions"}
 
-	return make_mapped_doc("Quotation", source_name, target_doc,
-							target_cdt="Quotation Item", field_map=field_map,
-							postprocess=set_missing_values, child_postprocess=set_item_details,
-							check_for_existing=False)
+	return make_mapped_doc("Sales Order", source_name, target_doc,
+		target_cdt="Sales Order Item", field_map=field_map,
+		postprocess=set_missing_values, child_postprocess=set_item_details,
+		check_for_existing=False)
 
 
 @frappe.whitelist()
@@ -60,7 +65,7 @@ def start_repair(source_name, target_doc=None):
 
 	target_doc = make_mapped_doc("Production Order", source_name, target_doc, field_map=field_map, postprocess=set_missing_values)
 	target_doc.update({
-		"use_multi_level_bom": 0,
+		"naming_series": frappe.db.get_single_value("Repair Settings", "production_naming_series") or target_doc.naming_series,
 		"skip_transfer": 1
 	})
 
@@ -72,21 +77,33 @@ def make_stock_entry_for_repair(production_order_id, repair_item, serial_no):
 	production_order = frappe.get_doc("Production Order", production_order_id)
 	stock_uom = frappe.db.get_value("Item", repair_item, "stock_uom")
 
+	incoming_warehouse = frappe.db.get_single_value("Repair Settings", "default_incoming_warehouse")
+	consumption_warehouse = frappe.db.get_single_value("Repair Settings", "default_consumption_warehouse")
+
 	stock_entry = frappe.new_doc("Stock Entry")
 
 	stock_entry.update({
-		"purpose": "Material Transfer",
+		"purpose": "Material Transfer for Manufacture",
 		"production_order": production_order_id,
+		"from_bom": 1,
+		"fg_completed_qty": 1,
+		"from_warehouse": incoming_warehouse,
+		"to_warehouse": consumption_warehouse
+	})
+	stock_entry.get_items()
+
+	for item in stock_entry.items:
+		item.t_warehouse = consumption_warehouse
+
+	stock_entry.append("items", {
+		"item_code": repair_item,
+		"qty": 1,
+		"uom": stock_uom,
+		"stock_uom": stock_uom,
+		"s_warehouse": incoming_warehouse,
+		"t_warehouse": production_order.fg_warehouse,
 		"warranty_claim": production_order.warranty_claim,
-		"from_warehouse": frappe.db.get_single_value("Repair Settings", "default_incoming_warehouse"),
-		"to_warehouse": production_order.fg_warehouse,
-		"items": [{
-			"item_code": repair_item,
-			"qty": 1,
-			"uom": stock_uom,
-			"stock_uom": stock_uom,
-			"serial_no": serial_no
-		}]
+		"serial_no": serial_no
 	})
 
 	return stock_entry.as_dict()

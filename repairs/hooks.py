@@ -29,7 +29,8 @@ app_license = "MIT"
 doctype_js = {
 	"Warranty Claim": "public/js/warranty_claim.js",
 	"Production Order": "public/js/production_order.js",
-	"Quotation": "public/js/quotation.js"
+	"Sales Order": "public/js/sales_order.js",
+	"Sales Invoice": "public/js/sales_invoice.js"
 }
 doctype_list_js = {"Warranty Claim": "public/js/warranty_claim_list.js"}
 # doctype_tree_js = {"doctype" : "public/js/doctype_tree.js"}
@@ -99,9 +100,13 @@ doc_events = {
 	"Stock Entry": {
 		"on_submit": [
 			"repairs.status_updater.stock_entry",
+			"repairs.utils.flush_raw_materials_for_repair",
 			"repairs.utils.complete_production_order"
 		],
-		"on_cancel": "repairs.status_updater.stock_entry"
+		"on_cancel": [
+			"repairs.status_updater.stock_entry",
+			"repairs.utils.flush_raw_materials_for_repair",
+		]
 	},
 	"Sales Invoice": {
 		"on_submit": "repairs.status_updater.sales_invoice",

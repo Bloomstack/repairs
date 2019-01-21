@@ -36,7 +36,7 @@ frappe.ui.form.on("Warranty Claim", {
 			return { filters: { "item_group": "Services" } };
 		};
 
-		if (!frm.doc.__islocal && frm.doc.status != "Completed") {
+		if (!frm.is_new() && frm.doc.status != "Completed") {
 			// Receive the item from the customer
 			if (!frm.doc.item_received) {
 				frm.add_custom_button(__("Stock Receipt"), () => {
@@ -49,6 +49,12 @@ frappe.ui.form.on("Warranty Claim", {
 							if (!r.exc) {
 								frm.set_value("received_date", frappe.datetime.now_datetime());
 								frm.reload_doc();
+
+								frappe.db.get_value('Repair Settings', { name: 'Repair Settings' }, 'default_incoming_warehouse', (r) => {
+									if (r.default_incoming_warehouse) {
+										frappe.msgprint(__("The {0} was received in the {1} warehouse", [frm.doc.item_code, r.default_incoming_warehouse]));
+									}
+								});
 							}
 						}
 					});
@@ -129,13 +135,13 @@ frappe.ui.form.on("Warranty Claim", {
 
 			// Start the sales cycle for the customer
 			if (frm.doc.billing_status == "To Bill") {
-				frm.add_custom_button(__("Quotation"), () => {
+				frm.add_custom_button(__("Sales Order"), () => {
 					if (!frm.doc.services.length && frm.doc.status != "To Receive") {
-						frappe.confirm(__("Do you want to create a Quotation without services?"), () => {
-							frm.trigger("make_quotation");
+						frappe.confirm(__("Do you want to create a Sales Order without services?"), () => {
+							frm.trigger("make_sales_order");
 						});
 					} else {
-						frm.trigger("make_quotation");
+						frm.trigger("make_sales_order");
 					};
 				}, __("Make"));
 			};
@@ -177,9 +183,9 @@ frappe.ui.form.on("Warranty Claim", {
 		erpnext.utils.get_address_display(frm, "shipping_address", "service_address");
 	},
 
-	make_quotation: function (frm) {
+	make_sales_order: function (frm) {
 		frappe.model.open_mapped_doc({
-			method: "repairs.api.make_quotation",
+			method: "repairs.api.make_sales_order",
 			frm: frm,
 			run_link_triggers: true
 		});

@@ -140,20 +140,23 @@ def set_shipping_date(dti_shipment_note, method):
 
 def complete_production_order(stock_entry, method):
 	if method == "on_submit":
-		if stock_entry.warranty_claim and stock_entry.purpose == "Material Transfer":
-			update_fields = {
-				"produced_qty": 1,
-				"status": "Completed"
-			}
+		if stock_entry.purpose == "Material Transfer for Manufacture":
+			warranty_claim = frappe.db.get_value("Production Order", stock_entry.production_order, "warranty_claim")
 
-			frappe.db.set_value("Production Order", {"warranty_claim": stock_entry.warranty_claim}, update_fields, val=None)
-			frappe.db.commit()
+			if warranty_claim:
+				update_fields = {
+					"produced_qty": 1,
+					"status": "Completed"
+				}
 
-			warranty_claim = frappe.get_doc("Warranty Claim", stock_entry.warranty_claim)
-			if warranty_claim.status == "Repairing":
-				warranty_claim.status = "To Deliver"
-				warranty_claim.resolution_date = frappe.utils.now_datetime()
-				warranty_claim.save()
+				frappe.db.set_value("Production Order", {"warranty_claim": warranty_claim}, update_fields, val=None)
+				frappe.db.commit()
+
+				warranty_claim = frappe.get_doc("Warranty Claim", warranty_claim)
+				if warranty_claim.status == "Repairing":
+					warranty_claim.status = "To Deliver"
+					warranty_claim.resolution_date = frappe.utils.now_datetime()
+					warranty_claim.save()
 
 
 def create_stock_entry(warranty_claim):
@@ -164,7 +167,8 @@ def create_stock_entry(warranty_claim):
 									to_warehouse=to_warehouse, serial_no=serial_no,
 									do_not_save=True)
 
-	stock_entry.warranty_claim = warranty_claim.name
+	for item in stock_entry.items:
+		item.warranty_claim = warranty_claim.name
 
 	# Include the cable and case in the stock receipt, if entered
 	if warranty_claim.cable:
@@ -198,6 +202,40 @@ def create_stock_entry(warranty_claim):
 	return stock_entry.name
 
 
+def flush_raw_materials_for_repair(stock_entry, method):
+	if method == "on_submit":
+		new_se = frappe.new_doc("Stock Entry")
+		consumption_warehouse = frappe.db.get_single_value("Repair Settings", "default_consumption_warehouse")
+
+		new_se.update({
+			"purpose": "Material Issue",
+			"production_order": stock_entry.production_order,
+			"from_bom": 1,
+			"fg_completed_qty": 1,
+			"from_warehouse": frappe.db.get_single_value("Repair Settings", "default_consumption_warehouse"),
+			"reference_stock_entry": stock_entry.name
+		})
+
+		consumption_items = [item.as_dict() for item in stock_entry.items if item.t_warehouse == consumption_warehouse]
+
+		if consumption_items:
+			for c_item in consumption_items:
+				c_item.s_warehouse = consumption_warehouse
+				c_item.t_warehouse = None
+
+			new_se.set("items", consumption_items)
+			new_se.save()
+			new_se.submit()
+	elif method == "on_cancel":
+		if stock_entry.purpose == "Material Transfer for Manufacture":
+			existing_se = frappe.db.get_value("Stock Entry", filters={"reference_stock_entry": stock_entry.name})
+
+			if existing_se:
+				existing_se = frappe.get_doc("Stock Entry", existing_se)
+				existing_se.cancel()
+				existing_se.delete()
+
+
 def make_mapped_doc(target_dt, source_dn, target_doc, target_cdt=None, filters=None,
 					field_map=None, postprocess=None, child_postprocess=None, check_for_existing=True):
 	if not field_map:
@@ -222,7 +260,7 @@ def make_mapped_doc(target_dt, source_dn, target_doc, target_cdt=None, filters=N
 			}
 		})
 
-	# Multiple quotations and stock entries can be made against Warranty Claim
+	# Multiple sales orders and stock entries can be made against Warranty Claim
 	if check_for_existing:
 		if frappe.get_all(target_dt, filters=filters):
 			frappe.throw(_("A {0} document already exists for this request.".format(target_dt)))
