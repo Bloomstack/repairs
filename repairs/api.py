@@ -77,21 +77,33 @@ def make_stock_entry_for_repair(production_order_id, repair_item, serial_no):
 	production_order = frappe.get_doc("Production Order", production_order_id)
 	stock_uom = frappe.db.get_value("Item", repair_item, "stock_uom")
 
+	incoming_warehouse = frappe.db.get_single_value("Repair Settings", "default_incoming_warehouse")
+	consumption_warehouse = frappe.db.get_single_value("Repair Settings", "default_consumption_warehouse")
+
 	stock_entry = frappe.new_doc("Stock Entry")
 
 	stock_entry.update({
 		"purpose": "Material Transfer for Manufacture",
 		"production_order": production_order_id,
-		"from_warehouse": frappe.db.get_single_value("Repair Settings", "default_incoming_warehouse"),
-		"to_warehouse": production_order.fg_warehouse,
-		"items": [{
-			"item_code": repair_item,
-			"qty": 1,
-			"uom": stock_uom,
-			"stock_uom": stock_uom,
-			"warranty_claim": production_order.warranty_claim,
-			"serial_no": serial_no
-		}]
+		"from_bom": 1,
+		"fg_completed_qty": 1,
+		"from_warehouse": incoming_warehouse,
+		"to_warehouse": consumption_warehouse
+	})
+	stock_entry.get_items()
+
+	for item in stock_entry.items:
+		item.t_warehouse = consumption_warehouse
+
+	stock_entry.append("items", {
+		"item_code": repair_item,
+		"qty": 1,
+		"uom": stock_uom,
+		"stock_uom": stock_uom,
+		"s_warehouse": incoming_warehouse,
+		"t_warehouse": production_order.fg_warehouse,
+		"warranty_claim": production_order.warranty_claim,
+		"serial_no": serial_no
 	})
 
 	return stock_entry.as_dict()

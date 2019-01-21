@@ -100,9 +100,13 @@ doc_events = {
 	"Stock Entry": {
 		"on_submit": [
 			"repairs.status_updater.stock_entry",
+			"repairs.utils.flush_raw_materials_for_repair",
 			"repairs.utils.complete_production_order"
 		],
-		"on_cancel": "repairs.status_updater.stock_entry"
+		"on_cancel": [
+			"repairs.status_updater.stock_entry",
+			"repairs.utils.flush_raw_materials_for_repair",
+		]
 	},
 	"Sales Invoice": {
 		"on_submit": "repairs.status_updater.sales_invoice",
