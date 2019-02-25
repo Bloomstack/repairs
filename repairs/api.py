@@ -32,6 +32,7 @@ def make_sales_order(source_name, target_doc=None):
 	def set_missing_values(source, target):
 		target.naming_series = frappe.db.get_single_value("Repair Settings", "order_naming_series")
 		target.order_type = "Maintenance"
+		target.authorize_production = True
 
 	def set_item_details(source, target, source_parent):
 		target.uom = frappe.db.get_value("Item", source.item_code, "stock_uom")
