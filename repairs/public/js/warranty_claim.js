@@ -75,15 +75,27 @@ frappe.ui.form.on("Warranty Claim", {
 			if (frm.doc.status == "To Test") {
 				var repair_btn = frm.add_custom_button(__("Test Item"), () => {
 					fields = [
+						{ fieldname: "sb_driver", fieldtype: "Section Break" },
+						{ label: __("LEFT DRIVER"), fieldname: "cb_left_driver", fieldtype: "Column Break" },
+						{ label: __("Low"), fieldname: "left_low_driver", fieldtype: "Check" },
+						{ label: __("Medium"), fieldname: "left_medium_driver", fieldtype: "Check" },
+						{ label: __("High"), fieldname: "left_high_driver", fieldtype: "Check" },
+						{ label: __("RIGHT DRIVER"), fieldname: "cb_right_driver", fieldtype: "Column Break" },
+						{ label: __("Low"), fieldname: "right_low_driver", fieldtype: "Check" },
+						{ label: __("Medium"), fieldname: "right_medium_driver", fieldtype: "Check" },
+						{ label: __("High"), fieldname: "right_high_driver", fieldtype: "Check" },
+
 						{ fieldname: "sb_shell", fieldtype: "Section Break" },
 						{ label: __("LEFT SHELL"), fieldname: "cb_left_shell", fieldtype: "Column Break" },
 						{ label: __("Cracked"), fieldname: "left_cracked_shell", fieldtype: "Check" },
 						{ label: __("Broken"), fieldname: "left_broken_shell", fieldtype: "Check" },
 						{ label: __("Refit"), fieldname: "left_refit_shell", fieldtype: "Check" },
+						{ label: __("Deep Clean"), fieldname: "left_clean_shell", fieldtype: "Check" },
 						{ label: __("RIGHT SHELL"), fieldname: "cb_right_shell", fieldtype: "Column Break" },
 						{ label: __("Cracked"), fieldname: "right_cracked_shell", fieldtype: "Check" },
 						{ label: __("Broken"), fieldname: "right_broken_shell", fieldtype: "Check" },
 						{ label: __("Refit"), fieldname: "right_refit_shell", fieldtype: "Check" },
+						{ label: __("Deep Clean"), fieldname: "right_clean_shell", fieldtype: "Check" },
 
 						{ fieldname: "sb_faceplate", fieldtype: "Section Break" },
 						{ label: __("LEFT FACEPLATE"), fieldname: "cb_left_faceplate", fieldtype: "Column Break" },
@@ -109,32 +121,37 @@ frappe.ui.form.on("Warranty Claim", {
 						{ label: __("Worn Out"), fieldname: "right_worn_out_socket", fieldtype: "Check" },
 						{ label: __("Spinning / Loose"), fieldname: "right_loose_socket", fieldtype: "Check" },
 
-						{ fieldname: "sb_details", fieldtype: "Section Break" },
+						{ fieldname: "sb_others", fieldtype: "Section Break" },
+						{ label: __("Cable Status"), fieldname: "cable_status", fieldtype: "Select", options: [null, "Good", "Bad"].join("\n") },
 						{ label: __("Additional Results"), fieldname: "testing_details", fieldtype: "Small Text" }
 					]
 
 					frappe.prompt(fields, (data) => {
-						for (var result in data) {
-							if (result != "testing_details" && data[result]) {
-								var issue_details = result.split("_");
+						for (let result in data) {
+							if (data[result]) {
+								if (["cable_status", "testing_details"].includes(result)) {
+									frm.set_value(result, data[result]);
+								} else {
+									let issue_details = result.split("_");
 
-								ear_side = issue_details[0]
-								ear_side = ear_side[0].toUpperCase() + ear_side.slice(1);  // Capitalize
+									ear_side = issue_details[0]
+									ear_side = ear_side[0].toUpperCase() + ear_side.slice(1);  // Capitalize
 
-								issue_name = issue_details.slice(1).join(" ");
-								issue_name = issue_name[0].toUpperCase() + issue_name.slice(1);  // Capitalize
+									issue_name = issue_details.slice(1).join(" ");
+									issue_name = issue_name[0].toUpperCase() + issue_name.slice(1);  // Capitalize
 
-								frm.doc.services.push({
-									"issue": issue_name,
-									"ear_side": ear_side
-								})
+									// add a row in the Testing Details table
+									frm.doc.services.push({
+										"issue": issue_name,
+										"ear_side": ear_side
+									})
+								}
 							}
 						};
 
 						frm.set_value("status", "To Repair");
 						frm.set_value("tested_by", frappe.session.user);
 						frm.set_value("testing_date", frappe.datetime.now_datetime());
-						frm.set_value("testing_details", data["testing_details"]);
 						frm.save();
 					}, __("Testing Results"), __("Record"));
 				});

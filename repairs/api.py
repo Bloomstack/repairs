@@ -34,15 +34,16 @@ def make_sales_order(source_name, target_doc=None):
 		target.order_type = "Maintenance"
 
 	def set_item_details(source, target, source_parent):
+		target.serial_no = source_parent.unlinked_serial_no or source_parent.serial_no
 		target.uom = frappe.db.get_value("Item", source.item_code, "stock_uom")
+		target.ear_side = source.ear_side
 
 		# Set IEM Owner details
 		if source_parent.iem_owner:
 			target.iem_owner = source_parent.iem_owner
+			target.designer_owner_first_name = frappe.db.get_value("IEM Owner", source_parent.iem_owner, "first_name")
+			target.designer_owner_last_name = frappe.db.get_value("IEM Owner", source_parent.iem_owner, "last_name")
 			target.designer_owner_email = source_parent.contact_email
-
-		# Include ear sides in the service description
-		target.description += "<br><div><strong>Ear sides for service: {0}</strong></div>".format(source.ear_side)
 
 		# Set item quantity based on number of ear sides
 		if not source.ear_side or source.ear_side in ["Left", "Right"]:
