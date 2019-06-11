@@ -132,32 +132,7 @@ frappe.ui.form.on("Warranty Claim", {
 								if (["cable_status", "testing_details"].includes(result)) {
 									frm.set_value(result, data[result]);
 								} else {
-									let [ear_side, service_desc, service_type] = result.split("_");
-
-									ear_side = ear_side[0].toUpperCase() + ear_side.slice(1);  // Capitalize
-
-									issue_name = [service_desc, service_type].join(" ");
-									issue_name = issue_name[0].toUpperCase() + issue_name.slice(1);  // Capitalize
-
-									let driver_type = service_type == "driver" ? service_desc : "";
-
-									let suggested_service;
-									frappe.db.get_value("Item Service Default", {
-										"parent": frm.doc.item_code,
-										"service_type": service_type,
-										"driver_type": driver_type
-									}, "default_service_item", (r) => {
-										if (!r.exc) {
-											suggested_service = r.default_service_item;
-										}
-									})
-
-									// add a row in the Testing Details table
-									frm.doc.services.push({
-										"issue": issue_name,
-										"ear_side": ear_side,
-										"item_code": ""
-									})
+									get_suggested_service_for_result(frm, result);
 								}
 							}
 						};
@@ -229,3 +204,29 @@ frappe.ui.form.on("Warranty Claim", {
 		});
 	},
 });
+
+async function get_suggested_service_for_result(frm, result) {
+	let [ear_side, service_desc, service_type] = result.split("_");
+	let driver_type = service_type == "driver" ? service_desc : "";
+
+	let r = await frappe.db.get_value("Item Service Default", {
+		"parent": frm.doc.item_code,
+		"service_type": service_type,
+		"driver_type": driver_type
+	}, "default_service_item")
+
+	// get issue details
+	let issue = [service_desc, service_type].join(" ");
+	issue = issue[0].toUpperCase() + issue.slice(1);  // Capitalize
+
+	ear_side = ear_side[0].toUpperCase() + ear_side.slice(1);  // Capitalize
+
+	let item_code = r.message ? r.message.default_service_item : ""
+
+	// add a row in the Testing Details table
+	frm.doc.services.push({
+		"issue": issue,
+		"ear_side": ear_side,
+		"item_code": item_code
+	})
+}
