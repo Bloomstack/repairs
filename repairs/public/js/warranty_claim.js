@@ -78,11 +78,11 @@ frappe.ui.form.on("Warranty Claim", {
 						{ fieldname: "sb_driver", fieldtype: "Section Break" },
 						{ label: __("LEFT DRIVER"), fieldname: "cb_left_driver", fieldtype: "Column Break" },
 						{ label: __("Low"), fieldname: "left_low_driver", fieldtype: "Check" },
-						{ label: __("Medium"), fieldname: "left_medium_driver", fieldtype: "Check" },
+						{ label: __("Mid"), fieldname: "left_mid_driver", fieldtype: "Check" },
 						{ label: __("High"), fieldname: "left_high_driver", fieldtype: "Check" },
 						{ label: __("RIGHT DRIVER"), fieldname: "cb_right_driver", fieldtype: "Column Break" },
 						{ label: __("Low"), fieldname: "right_low_driver", fieldtype: "Check" },
-						{ label: __("Medium"), fieldname: "right_medium_driver", fieldtype: "Check" },
+						{ label: __("Mid"), fieldname: "right_mid_driver", fieldtype: "Check" },
 						{ label: __("High"), fieldname: "right_high_driver", fieldtype: "Check" },
 
 						{ fieldname: "sb_shell", fieldtype: "Section Break" },
@@ -132,19 +132,7 @@ frappe.ui.form.on("Warranty Claim", {
 								if (["cable_status", "testing_details"].includes(result)) {
 									frm.set_value(result, data[result]);
 								} else {
-									let issue_details = result.split("_");
-
-									ear_side = issue_details[0]
-									ear_side = ear_side[0].toUpperCase() + ear_side.slice(1);  // Capitalize
-
-									issue_name = issue_details.slice(1).join(" ");
-									issue_name = issue_name[0].toUpperCase() + issue_name.slice(1);  // Capitalize
-
-									// add a row in the Testing Details table
-									frm.doc.services.push({
-										"issue": issue_name,
-										"ear_side": ear_side
-									})
+									get_suggested_service_for_result(frm, result);
 								}
 							}
 						};
@@ -216,3 +204,29 @@ frappe.ui.form.on("Warranty Claim", {
 		});
 	},
 });
+
+async function get_suggested_service_for_result(frm, result) {
+	let [ear_side, service_desc, service_type] = result.split("_");
+	let driver_type = service_type == "driver" ? service_desc : "";
+
+	let r = await frappe.db.get_value("Item Service Default", {
+		"parent": frm.doc.item_code,
+		"service_type": service_type,
+		"driver_type": driver_type
+	}, "default_service_item")
+
+	// get issue details
+	let issue = [service_desc, service_type].join(" ");
+	issue = issue[0].toUpperCase() + issue.slice(1);  // Capitalize
+
+	ear_side = ear_side[0].toUpperCase() + ear_side.slice(1);  // Capitalize
+
+	let item_code = r.message ? r.message.default_service_item : ""
+
+	// add a row in the Testing Details table
+	frm.doc.services.push({
+		"issue": issue,
+		"ear_side": ear_side,
+		"item_code": item_code
+	})
+}
