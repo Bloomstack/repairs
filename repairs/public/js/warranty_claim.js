@@ -221,12 +221,12 @@ async function get_suggested_service_for_result(frm, result) {
 
 	ear_side = ear_side[0].toUpperCase() + ear_side.slice(1);  // Capitalize
 
-	let item_code = r.message ? r.message.default_service_item : ""
+	let item_code = r.message ? r.message.default_service_item : "";
 
 	// add a row in the Testing Details table
-	frm.doc.services.push({
+	frm.add_child("services", {
 		"issue": issue,
 		"ear_side": ear_side,
 		"item_code": item_code
-	})
+	});
 }
