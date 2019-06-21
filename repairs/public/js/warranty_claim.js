@@ -127,20 +127,24 @@ frappe.ui.form.on("Warranty Claim", {
 					]
 
 					frappe.prompt(fields, (data) => {
+						let waitOnPromises = [];
+
 						for (let result in data) {
 							if (data[result]) {
 								if (["cable_status", "testing_details"].includes(result)) {
 									frm.set_value(result, data[result]);
 								} else {
-									get_suggested_service_for_result(frm, result);
+									waitOnPromises.push(get_suggested_service_for_result(frm, result));
 								}
 							}
 						};
 
-						frm.set_value("status", "To Repair");
-						frm.set_value("tested_by", frappe.session.user);
-						frm.set_value("testing_date", frappe.datetime.now_datetime());
-						frm.save();
+						Promise.all(waitOnPromises).then(() => {
+							frm.set_value("status", "To Repair");
+							frm.set_value("tested_by", frappe.session.user);
+							frm.set_value("testing_date", frappe.datetime.now_datetime());
+							frm.save();
+						});
 					}, __("Testing Results"), __("Record"));
 				});
 				repair_btn.addClass('btn-primary');
