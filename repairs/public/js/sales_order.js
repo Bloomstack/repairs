@@ -18,18 +18,25 @@ frappe.ui.form.on("Sales Order", {
 			.map(item => item.warranty_claim)
 			.filter(claim => claim)
 
-		if (frm.is_new() && warranty_claims.length > 0) {
-			frappe.call({
-				method: "repairs.api.get_customer_claim_count",
-				args: {
-					customer: frm.doc.customer
-				},
-				callback: (r) => {
-					if (r.message.count > 1) {
-						frm.trigger("get_service_items");
+		if (frm.is_new()) {
+			if (frm.doc.__onload.shipping_address_name) {
+				frm.set_value("shipping_address_name", frm.doc.__onload.shipping_address_name);
+				erpnext.utils.get_address_display(frm, "shipping_address_name", "shipping_address", false);
+			}
+
+			if (warranty_claims.length > 0) {
+				frappe.call({
+					method: "repairs.api.get_customer_claim_count",
+					args: {
+						customer: frm.doc.customer
+					},
+					callback: (r) => {
+						if (r.message.count > 1) {
+							frm.trigger("get_service_items");
+						}
 					}
-				}
-			});
+				});
+			}
 		}
 	},
 
