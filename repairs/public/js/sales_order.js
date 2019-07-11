@@ -19,7 +19,7 @@ frappe.ui.form.on("Sales Order", {
 			.filter(claim => claim)
 
 		if (frm.is_new()) {
-			if (frm.doc.__onload.shipping_address_name) {
+			if (frm.doc.__onload && frm.doc.__onload.shipping_address_name) {
 				frm.set_value("shipping_address_name", frm.doc.__onload.shipping_address_name);
 				erpnext.utils.get_address_display(frm, "shipping_address_name", "shipping_address", false);
 			}
