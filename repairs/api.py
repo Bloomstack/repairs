@@ -1,5 +1,6 @@
 import frappe
 from frappe.model.mapper import map_child_doc
+from frappe.utils import flt
 
 from .utils import create_stock_entry, make_mapped_doc
 
@@ -33,6 +34,11 @@ def make_sales_order(source_name, target_doc=None):
 		target.naming_series = frappe.db.get_single_value("Repair Settings", "order_naming_series")
 		target.order_type = "Maintenance"
 		target.set_onload("shipping_address_name", source.shipping_address)
+
+		# Set item weights
+		items = list(filter(None, [source.item_code, source.cable, source.case]))
+		item_weights = frappe.get_all("Item", filters={"item_code": ["IN", items]}, fields=["sum(net_weight) AS total_weight"])
+		target.total_net_weight = flt(target.total_net_weight) + item_weights[0].total_weight
 
 	def set_item_details(source, target, source_parent):
 		target.serial_no = source_parent.unlinked_serial_no or source_parent.serial_no
