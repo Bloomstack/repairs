@@ -58,6 +58,10 @@ def validate_serial_no_warranty(serial_no, method):
 
 
 def set_iem_owner(warranty_claim, method):
+	if warranty_claim.item_code and warranty_claim.item_group != "Custom":
+		warranty_claim.iem_owner = None
+		return
+
 	serial_no = warranty_claim.serial_no or warranty_claim.unlinked_serial_no
 
 	if serial_no:
@@ -66,14 +70,12 @@ def set_iem_owner(warranty_claim, method):
 		if not impression_id:
 			# Split the serial number to retrieve the IID (serial number format: JH{IEM model shorthand}-{IID}-{count})
 			impression_id = serial_no.split("-")
+			impression_id = impression_id[1] if len(impression_id) > 1 else impression_id[0]
 
-			if len(impression_id) > 1:
-				impression_id = impression_id[1]
-			else:
-				try:
-					impression_id = int(impression_id[0])
-				except ValueError:
-					return
+			try:
+				impression_id = int(impression_id)
+			except ValueError:
+				return
 
 			if impression_id:
 				if frappe.db.exists("Serial No", serial_no):
@@ -82,7 +84,10 @@ def set_iem_owner(warranty_claim, method):
 					frappe.db.set_value("Serial No", serial_no, "impression_id", impression_id)
 					frappe.db.set_value("Serial No", serial_no, "iem_owner", iem_owner)
 
-		warranty_claim.iem_owner = frappe.db.get_value("IEM Owner", {"impression_id": impression_id}, "name")
+		if impression_id:
+			warranty_claim.iem_owner = frappe.db.get_value("IEM Owner", {"impression_id": impression_id}, "name")
+		else:
+			warranty_claim.iem_owner = None
 
 
 def assign_warranty_claim(warranty_claim, method):
