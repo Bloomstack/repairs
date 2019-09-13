@@ -276,3 +276,32 @@ def make_mapped_doc(target_dt, source_dn, target_doc, target_cdt=None, filters=N
 			frappe.throw(_("A {0} document already exists for this request.".format(target_dt)))
 
 	return get_mapped_doc("Warranty Claim", source_dn, table_map, target_doc, postprocess=postprocess)
+
+
+def get_wc_dashboard_data(data):
+	if not data:
+		return frappe._dict({
+			'fieldname': 'warranty_claim',
+			'non_standard_fieldnames': {},
+			'internal_links': {},
+			'transactions': [
+				{
+					'label': _('Reference'),
+					'items': ['Quotation', 'Sales Order']
+				},
+				{
+					'label': _('Stock'),
+					'items': ['Stock Entry']
+				},
+				{
+					'label': _('Work'),
+					'items': ['Work Order']
+				},
+				{
+					'label': _('Fulfilment'),
+					'items': ['Sales Invoice', 'Delivery Note']
+				}
+			]
+		})
+
+	return data
