@@ -58,7 +58,7 @@ def validate_serial_no_warranty(serial_no, method):
 
 
 def set_iem_owner(warranty_claim, method):
-	if warranty_claim.item_code and warranty_claim.item_group != "Custom":
+	if warranty_claim.item_group and warranty_claim.item_group != "Custom":
 		warranty_claim.iem_owner = None
 		return
 
