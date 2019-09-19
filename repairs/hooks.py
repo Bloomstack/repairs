@@ -164,3 +164,7 @@ doc_events = {
 # override_whitelisted_methods = {
 # 	"frappe.desk.doctype.event.event.get_events": "repairs.event.get_events"
 # }
+
+override_doctype_dashboards = {
+	"Warranty Claim": "repairs.utils.get_wc_dashboard_data"
+}
