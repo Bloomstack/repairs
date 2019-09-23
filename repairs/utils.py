@@ -143,10 +143,10 @@ def set_shipping_date(dti_shipment_note, method):
 		warranty_claim.save()
 
 
-def complete_production_order(stock_entry, method):
+def complete_work_order(stock_entry, method):
 	if method == "on_submit":
 		if stock_entry.purpose == "Material Transfer for Manufacture":
-			warranty_claim = frappe.db.get_value("Production Order", stock_entry.production_order, "warranty_claim")
+			warranty_claim = frappe.db.get_value("Work Order", stock_entry.work_order, "warranty_claim")
 
 			if warranty_claim:
 				update_fields = {
@@ -154,7 +154,7 @@ def complete_production_order(stock_entry, method):
 					"status": "Completed"
 				}
 
-				frappe.db.set_value("Production Order", {"warranty_claim": warranty_claim}, update_fields, val=None)
+				frappe.db.set_value("Work Order", {"warranty_claim": warranty_claim}, update_fields, val=None)
 				frappe.db.commit()
 
 				warranty_claim = frappe.get_doc("Warranty Claim", warranty_claim)
@@ -214,7 +214,7 @@ def flush_raw_materials_for_repair(stock_entry, method):
 
 		new_se.update({
 			"purpose": "Material Issue",
-			"production_order": stock_entry.production_order,
+			"work_order": stock_entry.work_order,
 			"from_bom": 1,
 			"fg_completed_qty": 1,
 			"from_warehouse": frappe.db.get_single_value("Repair Settings", "default_consumption_warehouse"),

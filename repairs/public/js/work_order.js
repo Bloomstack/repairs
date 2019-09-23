@@ -1,4 +1,4 @@
-erpnext.production_order.make_se = function (frm, purpose) {
+erpnext.work_order.make_se = function (frm, purpose) {
 	if (!frm.doc.skip_transfer) {
 		var max = (purpose === "Manufacture") ?
 			flt(frm.doc.material_transferred_for_manufacturing) - flt(frm.doc.produced_qty) :
@@ -22,14 +22,14 @@ erpnext.production_order.make_se = function (frm, purpose) {
 		if (frm.doc.warranty_claim) {
 			method = "repairs.api.make_stock_entry_for_repair";
 			args = {
-				"production_order_id": frm.doc.name,
+				"work_order_id": frm.doc.name,
 				"repair_item": frm.doc.production_item,
 				"serial_no": frm.doc.serial_number
 			};
 		} else {
-			method = "erpnext.manufacturing.doctype.production_order.production_order.make_stock_entry";
+			method = "erpnext.manufacturing.doctype.work_order.work_order.make_stock_entry";
 			args = {
-				"production_order_id": frm.doc.name,
+				"work_order_id": frm.doc.name,
 				"purpose": purpose,
 				"qty": data.qty
 			};

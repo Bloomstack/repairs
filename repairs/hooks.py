@@ -28,7 +28,7 @@ app_license = "MIT"
 # include js in doctype views
 doctype_js = {
 	"Warranty Claim": "public/js/warranty_claim.js",
-	"Production Order": "public/js/production_order.js",
+	"Work Order": "public/js/work_order.js",
 	"Sales Order": "public/js/sales_order.js",
 	"Sales Invoice": "public/js/sales_invoice.js"
 }
@@ -101,7 +101,7 @@ doc_events = {
 		"on_submit": [
 			"repairs.status_updater.stock_entry",
 			"repairs.utils.flush_raw_materials_for_repair",
-			"repairs.utils.complete_production_order"
+			"repairs.utils.complete_work_order"
 		],
 		"on_cancel": [
 			"repairs.status_updater.stock_entry",
@@ -116,9 +116,9 @@ doc_events = {
 		"on_submit": "repairs.status_updater.payment_entry",
 		"on_cancel": "repairs.status_updater.payment_entry"
 	},
-	"Production Order": {
-		"on_submit": "repairs.status_updater.production_order",
-		"on_cancel": "repairs.status_updater.production_order"
+	"Work Order": {
+		"on_submit": "repairs.status_updater.work_order",
+		"on_cancel": "repairs.status_updater.work_order"
 	},
 	"DTI Shipment Note": {
 		"on_submit": [
