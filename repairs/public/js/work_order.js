@@ -19,6 +19,7 @@ erpnext.work_order.make_se = function (frm, purpose) {
 			return
 		};
 
+		let method, args;
 		if (frm.doc.warranty_claim) {
 			method = "repairs.api.make_stock_entry_for_repair";
 			args = {
