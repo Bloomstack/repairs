@@ -36,7 +36,7 @@ frappe.ui.form.on('Repair Settings', {
 		frappe.call({
 			method: "repairs.api.get_doctype_series",
 			args: {
-				doctype: "Production Order"
+				doctype: "Work Order"
 			},
 			callback: (r) => {
 				if (!r.exc) {
