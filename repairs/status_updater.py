@@ -53,7 +53,7 @@ def payment_entry(doc, method):
 				set_warranty_billing_status(claim, method)
 
 
-def production_order(doc, method):
+def work_order(doc, method):
 	if doc.warranty_claim:
 		if method == "on_submit":
 			if get_item_status(doc.warranty_claim) == "To Repair":

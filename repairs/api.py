@@ -73,7 +73,7 @@ def start_repair(source_name, target_doc=None):
 		"item_code": "production_item"
 	}
 
-	target_doc = make_mapped_doc("Production Order", source_name, target_doc, field_map=field_map, postprocess=set_missing_values)
+	target_doc = make_mapped_doc("Work Order", source_name, target_doc, field_map=field_map, postprocess=set_missing_values)
 	target_doc.update({
 		"naming_series": frappe.db.get_single_value("Repair Settings", "production_naming_series") or target_doc.naming_series,
 		"skip_transfer": 1
@@ -83,8 +83,8 @@ def start_repair(source_name, target_doc=None):
 
 
 @frappe.whitelist()
-def make_stock_entry_for_repair(production_order_id, repair_item, serial_no):
-	production_order = frappe.get_doc("Production Order", production_order_id)
+def make_stock_entry_for_repair(work_order_id, repair_item, serial_no):
+	work_order = frappe.get_doc("Work Order", work_order_id)
 	stock_uom = frappe.db.get_value("Item", repair_item, "stock_uom")
 
 	incoming_warehouse = frappe.db.get_single_value("Repair Settings", "default_incoming_warehouse")
@@ -94,7 +94,7 @@ def make_stock_entry_for_repair(production_order_id, repair_item, serial_no):
 
 	stock_entry.update({
 		"purpose": "Material Transfer for Manufacture",
-		"production_order": production_order_id,
+		"work_order": work_order_id,
 		"from_bom": 1,
 		"fg_completed_qty": 1,
 		"from_warehouse": incoming_warehouse,
@@ -111,8 +111,8 @@ def make_stock_entry_for_repair(production_order_id, repair_item, serial_no):
 		"uom": stock_uom,
 		"stock_uom": stock_uom,
 		"s_warehouse": incoming_warehouse,
-		"t_warehouse": production_order.fg_warehouse,
-		"warranty_claim": production_order.warranty_claim,
+		"t_warehouse": work_order.fg_warehouse,
+		"warranty_claim": work_order.warranty_claim,
 		"serial_no": serial_no
 	})
 
@@ -127,7 +127,7 @@ def make_delivery_note(source_name, target_doc=None):
 			"description": frappe.db.get_value("Item", source_doc.item_code, "description"),
 			"uom": frappe.db.get_value("Item", source_doc.item_code, "stock_uom"),
 			"serial_no": source_doc.serial_no or source_doc.unlinked_serial_no,
-			"warehouse": frappe.db.get_value("Production Order", {"warranty_claim": source_doc.name}, "fg_warehouse")
+			"warehouse": frappe.db.get_value("Work Order", {"warranty_claim": source_doc.name}, "fg_warehouse")
 		})
 
 	target_doc = make_mapped_doc("Delivery Note", source_name, target_doc)
