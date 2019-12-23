@@ -91,11 +91,13 @@ frappe.ui.form.on("Warranty Claim", {
 						{ label: __("Broken"), fieldname: "left_broken_shell", fieldtype: "Check" },
 						{ label: __("Refit"), fieldname: "left_refit_shell", fieldtype: "Check" },
 						{ label: __("Deep Clean"), fieldname: "left_clean_shell", fieldtype: "Check" },
+						{ label: __("3D Scan"), fieldname: "left_scan_shell", fieldtype: "Check" },
 						{ label: __("RIGHT SHELL"), fieldname: "cb_right_shell", fieldtype: "Column Break" },
 						{ label: __("Cracked"), fieldname: "right_cracked_shell", fieldtype: "Check" },
 						{ label: __("Broken"), fieldname: "right_broken_shell", fieldtype: "Check" },
 						{ label: __("Refit"), fieldname: "right_refit_shell", fieldtype: "Check" },
 						{ label: __("Deep Clean"), fieldname: "right_clean_shell", fieldtype: "Check" },
+						{ label: __("3D Scan"), fieldname: "right_scan_shell", fieldtype: "Check" },
 
 						{ fieldname: "sb_faceplate", fieldtype: "Section Break" },
 						{ label: __("LEFT FACEPLATE"), fieldname: "cb_left_faceplate", fieldtype: "Column Break" },
@@ -211,21 +213,27 @@ frappe.ui.form.on("Warranty Claim", {
 
 async function get_suggested_service_for_result(frm, result) {
 	let [ear_side, service_desc, service_type] = result.split("_");
-	let driver_type = service_type == "driver" ? service_desc : "";
 
-	let r = await frappe.db.get_value("Item Service Default", {
-		"parent": frm.doc.item_code,
-		"service_type": service_type,
-		"driver_type": driver_type
-	}, "default_service_item")
+	// get suggested service item for the issue
+	let item_code = "";
+	if (service_desc == "scan") {
+		let r = await frappe.db.get_value("Repair Settings", { "name": "Repair Settings" }, "default_3d_scan_item");
+		item_code = r.message ? r.message.default_3d_scan_item : "";
+	} else {
+		let driver_type = service_type == "driver" ? service_desc : "";
+		let r = await frappe.db.get_value("Item Service Default", {
+			"parent": frm.doc.item_code,
+			"service_type": service_type,
+			"driver_type": driver_type
+		}, "default_service_item");
+
+		item_code = r.message ? r.message.default_service_item : "";
+	}
 
 	// get issue details
 	let issue = [service_desc, service_type].join(" ");
 	issue = issue[0].toUpperCase() + issue.slice(1);  // Capitalize
-
 	ear_side = ear_side[0].toUpperCase() + ear_side.slice(1);  // Capitalize
-
-	let item_code = r.message ? r.message.default_service_item : "";
 
 	// add a row in the Testing Details table
 	frm.add_child("services", {
