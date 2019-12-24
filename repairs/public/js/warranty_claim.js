@@ -73,7 +73,21 @@ frappe.ui.form.on("Warranty Claim", {
 
 			// Start testing the item
 			if (frm.doc.status == "To Test") {
-				var repair_btn = frm.add_custom_button(__("Test Item"), () => {
+				let requires_scan = {
+					left_ear: false,
+					right_ear: false
+				};
+
+				for (let issue of frm.doc.issues) {
+					frappe.db.get_value("Repair Issue Option", issue.issue_type, "is_3d_scan", (r) => {
+						if (r && r.is_3d_scan) {
+							requires_scan.left_ear = issue.left_ear;
+							requires_scan.right_ear = issue.right_ear;
+						}
+					});
+				}
+
+				let test_btn = frm.add_custom_button(__("Test Item"), () => {
 					fields = [
 						{ fieldname: "sb_driver", fieldtype: "Section Break" },
 						{ label: __("LEFT DRIVER"), fieldname: "cb_left_driver", fieldtype: "Column Break" },
@@ -91,13 +105,13 @@ frappe.ui.form.on("Warranty Claim", {
 						{ label: __("Broken"), fieldname: "left_broken_shell", fieldtype: "Check" },
 						{ label: __("Refit"), fieldname: "left_refit_shell", fieldtype: "Check" },
 						{ label: __("Deep Clean"), fieldname: "left_clean_shell", fieldtype: "Check" },
-						{ label: __("3D Scan"), fieldname: "left_scan_shell", fieldtype: "Check" },
+						{ label: __("3D Scan"), fieldname: "left_scan_shell", fieldtype: "Check", "default": requires_scan.left_ear },
 						{ label: __("RIGHT SHELL"), fieldname: "cb_right_shell", fieldtype: "Column Break" },
 						{ label: __("Cracked"), fieldname: "right_cracked_shell", fieldtype: "Check" },
 						{ label: __("Broken"), fieldname: "right_broken_shell", fieldtype: "Check" },
 						{ label: __("Refit"), fieldname: "right_refit_shell", fieldtype: "Check" },
 						{ label: __("Deep Clean"), fieldname: "right_clean_shell", fieldtype: "Check" },
-						{ label: __("3D Scan"), fieldname: "right_scan_shell", fieldtype: "Check" },
+						{ label: __("3D Scan"), fieldname: "right_scan_shell", fieldtype: "Check", "default": requires_scan.right_ear },
 
 						{ fieldname: "sb_faceplate", fieldtype: "Section Break" },
 						{ label: __("LEFT FACEPLATE"), fieldname: "cb_left_faceplate", fieldtype: "Column Break" },
@@ -149,7 +163,7 @@ frappe.ui.form.on("Warranty Claim", {
 						});
 					}, __("Testing Results"), __("Record"));
 				});
-				repair_btn.addClass('btn-primary');
+				test_btn.addClass('btn-primary');
 			};
 
 			// Start the sales cycle for the customer
@@ -167,7 +181,7 @@ frappe.ui.form.on("Warranty Claim", {
 
 			// Start repairing the item
 			if (frm.doc.status == "To Repair") {
-				var repair_btn = frm.add_custom_button(__("Start Repair"), () => {
+				let repair_btn = frm.add_custom_button(__("Start Repair"), () => {
 					frappe.model.open_mapped_doc({
 						method: "repairs.api.start_repair",
 						frm: frm,

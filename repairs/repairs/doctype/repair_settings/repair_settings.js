@@ -3,9 +3,9 @@
 
 frappe.ui.form.on('Repair Settings', {
 	setup: (frm) => {
-		frm.set_query('default_3d_scan_item', () => {
+		frm.set_query("default_3d_scan_item", () => {
 			return { filters: { "item_group": "Services" } };
-		})
+		});
 	},
 
 	refresh: (frm) => {
