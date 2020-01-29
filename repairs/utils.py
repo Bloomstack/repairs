@@ -58,7 +58,7 @@ def validate_serial_no_warranty(serial_no, method):
 
 
 def set_iem_owner(warranty_claim, method):
-	if warranty_claim.item_code and warranty_claim.item_group != "Custom":
+	if warranty_claim.item_group and warranty_claim.item_group != "Custom":
 		warranty_claim.iem_owner = None
 		return
 
@@ -79,13 +79,18 @@ def set_iem_owner(warranty_claim, method):
 
 			if impression_id:
 				if frappe.db.exists("Serial No", serial_no):
-					iem_owner = frappe.db.get_value("IEM Owner", {"impression_id": impression_id}, "name")
-
 					frappe.db.set_value("Serial No", serial_no, "impression_id", impression_id)
-					frappe.db.set_value("Serial No", serial_no, "iem_owner", iem_owner)
+
+					iem_owner = frappe.get_all("IEM Owner", or_filters={"impression_id": impression_id, "old_impression_id": impression_id})
+					if iem_owner:
+						frappe.db.set_value("Serial No", serial_no, "iem_owner", iem_owner[0].name)
 
 		if impression_id:
-			warranty_claim.iem_owner = frappe.db.get_value("IEM Owner", {"impression_id": impression_id}, "name")
+			iem_owner = frappe.get_all("IEM Owner", or_filters={"impression_id": impression_id, "old_impression_id": impression_id})
+			if iem_owner:
+				warranty_claim.iem_owner = iem_owner[0].name
+			else:
+				warranty_claim.iem_owner = None
 		else:
 			warranty_claim.iem_owner = None
 

@@ -73,7 +73,21 @@ frappe.ui.form.on("Warranty Claim", {
 
 			// Start testing the item
 			if (frm.doc.status == "To Test") {
-				var repair_btn = frm.add_custom_button(__("Test Item"), () => {
+				let requires_scan = {
+					left_ear: false,
+					right_ear: false
+				};
+
+				for (let issue of frm.doc.issues) {
+					frappe.db.get_value("Repair Issue Option", issue.issue_type, "is_3d_scan", (r) => {
+						if (r && r.is_3d_scan) {
+							requires_scan.left_ear = issue.left_ear;
+							requires_scan.right_ear = issue.right_ear;
+						}
+					});
+				}
+
+				let test_btn = frm.add_custom_button(__("Test Item"), () => {
 					fields = [
 						{ fieldname: "sb_driver", fieldtype: "Section Break" },
 						{ label: __("LEFT DRIVER"), fieldname: "cb_left_driver", fieldtype: "Column Break" },
@@ -91,11 +105,13 @@ frappe.ui.form.on("Warranty Claim", {
 						{ label: __("Broken"), fieldname: "left_broken_shell", fieldtype: "Check" },
 						{ label: __("Refit"), fieldname: "left_refit_shell", fieldtype: "Check" },
 						{ label: __("Deep Clean"), fieldname: "left_clean_shell", fieldtype: "Check" },
+						{ label: __("3D Scan"), fieldname: "left_scan_shell", fieldtype: "Check", "default": requires_scan.left_ear },
 						{ label: __("RIGHT SHELL"), fieldname: "cb_right_shell", fieldtype: "Column Break" },
 						{ label: __("Cracked"), fieldname: "right_cracked_shell", fieldtype: "Check" },
 						{ label: __("Broken"), fieldname: "right_broken_shell", fieldtype: "Check" },
 						{ label: __("Refit"), fieldname: "right_refit_shell", fieldtype: "Check" },
 						{ label: __("Deep Clean"), fieldname: "right_clean_shell", fieldtype: "Check" },
+						{ label: __("3D Scan"), fieldname: "right_scan_shell", fieldtype: "Check", "default": requires_scan.right_ear },
 
 						{ fieldname: "sb_faceplate", fieldtype: "Section Break" },
 						{ label: __("LEFT FACEPLATE"), fieldname: "cb_left_faceplate", fieldtype: "Column Break" },
@@ -147,7 +163,7 @@ frappe.ui.form.on("Warranty Claim", {
 						});
 					}, __("Testing Results"), __("Record"));
 				});
-				repair_btn.addClass('btn-primary');
+				test_btn.addClass('btn-primary');
 			};
 
 			// Start the sales cycle for the customer
@@ -165,7 +181,7 @@ frappe.ui.form.on("Warranty Claim", {
 
 			// Start repairing the item
 			if (frm.doc.status == "To Repair") {
-				var repair_btn = frm.add_custom_button(__("Start Repair"), () => {
+				let repair_btn = frm.add_custom_button(__("Start Repair"), () => {
 					frappe.model.open_mapped_doc({
 						method: "repairs.api.start_repair",
 						frm: frm,
@@ -211,21 +227,27 @@ frappe.ui.form.on("Warranty Claim", {
 
 async function get_suggested_service_for_result(frm, result) {
 	let [ear_side, service_desc, service_type] = result.split("_");
-	let driver_type = service_type == "driver" ? service_desc : "";
 
-	let r = await frappe.db.get_value("Item Service Default", {
-		"parent": frm.doc.item_code,
-		"service_type": service_type,
-		"driver_type": driver_type
-	}, "default_service_item")
+	// get suggested service item for the issue
+	let item_code = "";
+	if (service_desc == "scan") {
+		let r = await frappe.db.get_value("Repair Settings", { "name": "Repair Settings" }, "default_3d_scan_item");
+		item_code = r.message ? r.message.default_3d_scan_item : "";
+	} else {
+		let driver_type = service_type == "driver" ? service_desc : "";
+		let r = await frappe.db.get_value("Item Service Default", {
+			"parent": frm.doc.item_code,
+			"service_type": service_type,
+			"driver_type": driver_type
+		}, "default_service_item");
+
+		item_code = r.message ? r.message.default_service_item : "";
+	}
 
 	// get issue details
 	let issue = [service_desc, service_type].join(" ");
 	issue = issue[0].toUpperCase() + issue.slice(1);  // Capitalize
-
 	ear_side = ear_side[0].toUpperCase() + ear_side.slice(1);  // Capitalize
-
-	let item_code = r.message ? r.message.default_service_item : "";
 
 	// add a row in the Testing Details table
 	frm.add_child("services", {
