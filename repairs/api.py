@@ -29,6 +29,41 @@ def get_doctype_series(doctype):
 
 
 @frappe.whitelist()
+def make_quotation(source_name, target_doc=None):
+	def set_missing_values(source, target):
+		target.party_name = source.customer
+		target.order_type = "Maintenance"
+		target.set_onload("shipping_address_name", source.shipping_address)
+
+		# Set item weights
+		items = list(filter(None, [source.item_code, source.cable, source.case]))
+		item_weights = frappe.get_all("Item", filters={"item_code": ["IN", items]}, fields=["sum(net_weight) AS total_weight"])
+		target.total_net_weight = flt(target.total_net_weight) + item_weights[0].total_weight
+
+	def set_item_details(source, target, source_parent):
+		target.serial_no = source_parent.unlinked_serial_no or source_parent.serial_no
+		target.uom = frappe.db.get_value("Item", source.item_code, "stock_uom")
+		target.ear_side = source.ear_side
+
+		# Set IEM Owner details
+		if source_parent.iem_owner:
+			target.iem_owner = source_parent.iem_owner
+			target.designer_owner_first_name = frappe.db.get_value("IEM Owner", source_parent.iem_owner, "first_name")
+			target.designer_owner_last_name = frappe.db.get_value("IEM Owner", source_parent.iem_owner, "last_name")
+			target.designer_owner_email = source_parent.contact_email
+
+		# Set item quantity based on number of ear sides
+		if not source.ear_side or source.ear_side in ["Left", "Right"]:
+			target.qty = 1
+		elif source.ear_side == "Both":
+			target.qty = 2
+
+	return make_mapped_doc("Quotation", source_name, target_doc,
+		target_cdt="Quotation Item", postprocess=set_missing_values,
+		child_postprocess=set_item_details, check_for_existing=False)
+
+
+@frappe.whitelist()
 def make_sales_order(source_name, target_doc=None):
 	def set_missing_values(source, target):
 		target.naming_series = frappe.db.get_single_value("Repair Settings", "order_naming_series")
