@@ -88,7 +88,7 @@ frappe.ui.form.on("Warranty Claim", {
 				}
 
 				let test_btn = frm.add_custom_button(__("Test Item"), () => {
-					fields = [
+					const fields = [
 						{ fieldname: "sb_driver", fieldtype: "Section Break" },
 						{ label: __("LEFT DRIVER"), fieldname: "cb_left_driver", fieldtype: "Column Break" },
 						{ label: __("Low"), fieldname: "left_low_driver", fieldtype: "Check" },
