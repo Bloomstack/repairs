@@ -222,8 +222,8 @@ frappe.ui.form.on("Warranty Claim", {
 		}
 	},
 
-	shipping_address: function (frm) {
-		erpnext.utils.get_address_display(frm, "shipping_address", "service_address");
+	shipping_address_name: function (frm) {
+		erpnext.utils.get_address_display(frm, "shipping_address_name", "service_address");
 	},
 
 	make_quotation: function (frm) {
