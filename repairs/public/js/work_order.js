@@ -32,7 +32,8 @@ erpnext.work_order.make_se = function (frm, purpose) {
 			args = {
 				"work_order_id": frm.doc.name,
 				"purpose": purpose,
-				"qty": data.qty
+				"qty": data.qty,
+				"sales_order": frm.doc.sales_order
 			};
 		};
 
