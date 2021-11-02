@@ -1,5 +1,11 @@
 frappe.ui.form.on("Warranty Claim", {
 	setup: (frm) => {
+		frm.make_methods = {
+			'Sales Order': () => frappe.model.open_mapped_doc({
+				method: "repairs.api.make_sales_order",
+				frm: frm
+			})
+		};
 		frm.set_query('shipping_address', erpnext.queries.address_query);
 
 		// triggers add fetch, sets value in model and runs triggers
