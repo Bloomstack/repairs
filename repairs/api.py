@@ -93,9 +93,11 @@ def make_sales_order(source_name, target_doc=None):
 		elif source.ear_side == "Both":
 			target.qty = 2
 
-	return make_mapped_doc("Sales Order", source_name, target_doc,
+	sales_order_doc = make_mapped_doc("Sales Order", source_name, target_doc,
 		target_cdt="Sales Order Item", postprocess=set_missing_values,
 		child_postprocess=set_item_details, check_for_existing=False)
+	sales_order_doc.run_method("set_missing_values")
+	return sales_order_doc
 
 
 @frappe.whitelist()
